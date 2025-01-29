@@ -5,6 +5,8 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
@@ -34,9 +36,20 @@ class WebViewActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     fun Open_WebView(webView: WebView, url: String) {
         webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true //修复访问公众号时加载失败的情况
 
         //获取webViewClient实例，并重写当页面加载成功时获取title并设置
         webView.webViewClient = object : WebViewClient() {
+
+            /*
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
+                val url =
+                return super.shouldOverrideUrlLoading(view, request)
+            }*/
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 toolbar.setTitle(webView.title)
