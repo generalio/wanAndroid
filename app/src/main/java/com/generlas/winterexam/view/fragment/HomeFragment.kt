@@ -85,7 +85,6 @@ class HomeFragment : Fragment() {
 
     //创建文章列表
     private fun createPassageCard(passageList: List<PassageInfo>) {
-        Log.d("zzx", passageList[0].title);
         if (activity != null) {
             val mainActivity = activity as MainActivity
             val passageAdapter = PassageAdapter(mainActivity, passageList)
@@ -166,11 +165,5 @@ class HomeFragment : Fragment() {
             }
         }
         handler.postDelayed(runnable, 3000)
-    }
-
-    //fragment销毁时释放资源
-    override fun onDestroy() {
-        super.onDestroy()
-        handler.removeCallbacks(runnable)
     }
 }

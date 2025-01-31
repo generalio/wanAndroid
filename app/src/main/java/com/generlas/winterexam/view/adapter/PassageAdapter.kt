@@ -37,8 +37,13 @@ class PassageAdapter(private val context: Context, private val passageList: List
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val passage = passageList[position]
-        holder.passageAuthor.text = passage.author
-        holder.passageDate.text = passage.niceDate
+        if(passage.author != "") {
+            holder.passageAuthor.text = passage.author
+            holder.passageDate.text = passage.niceDate
+        } else {
+            holder.passageAuthor.text = passage.shareUser
+            holder.passageDate.text = passage.niceShareDate
+        }
         holder.passageTitle.text = passage.title
         holder.passageChapterName.text = passage.chapterName
 
