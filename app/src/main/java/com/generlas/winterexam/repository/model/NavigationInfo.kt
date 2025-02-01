@@ -5,3 +5,4 @@ package com.generlas.winterexam.repository.model
  * date : 2025/2/1 17:08
  */
 data class NavigationInfo(val name: String, val articles: List<PassageInfo>)
+

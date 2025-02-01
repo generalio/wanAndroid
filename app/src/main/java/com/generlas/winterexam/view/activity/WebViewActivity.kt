@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +36,7 @@ class WebViewActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     fun Open_WebView(webView: WebView, url: String) {
+        webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW //启用https加载，修复无法加载一些公众号图片的问题
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true //修复访问公众号时加载失败的情况
 
