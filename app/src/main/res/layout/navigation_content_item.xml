@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="#EEEEEE"
     android:layout_margin="5dp"
-    android:padding="5dp">
+    android:padding="10dp">
 
     <TextView
         android:id="@+id/tv_navigation_content"

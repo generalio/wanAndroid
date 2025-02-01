@@ -58,6 +58,7 @@ class NavigationFragment : Fragment(), NavigationListAdapter.OnItemClickListener
         getInfo()
     }
 
+    //获取导航的信息
     private fun getInfo() {
         val url = "https://www.wanandroid.com/navi/json"
         val httpUtil = HttpUtil()
@@ -87,11 +88,13 @@ class NavigationFragment : Fragment(), NavigationListAdapter.OnItemClickListener
 
         mTvNavigation.text = navigationInfo[0].name
 
+        //设置流式布局
         contentRecyclerView.layoutManager = FlexboxLayoutManager(mainActivity)
         contentRecyclerView.adapter =
             NavigationContentAdapter(mainActivity, navigationInfo[0].articles)
     }
 
+    //监听导航栏的切换
     @SuppressLint("NotifyDataSetChanged")
     override fun onItemClick(navigationItem: NavigationInfo) {
         mTvNavigation.text = navigationItem.name
