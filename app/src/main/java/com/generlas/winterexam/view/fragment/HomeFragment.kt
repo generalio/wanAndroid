@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -43,6 +44,7 @@ class HomeFragment : Fragment() {
     var page : Int = 1
     lateinit var carouselAdapter: CarouselViewPager2Adapter
     lateinit var floatButton: FloatingActionButton
+    lateinit var mTvCarouselTitle: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,6 +65,7 @@ class HomeFragment : Fragment() {
         passageRecyclerView2 = view.findViewById(R.id.home_recyclerView)
         initPassageCard()
 
+        mTvCarouselTitle = view.findViewById(R.id.tv_carousel_text)
         floatButton = view.findViewById(R.id.float_home)
         floatButton.setOnClickListener {
             passageRecyclerView2.scrollToPosition(0)
@@ -206,6 +209,7 @@ class HomeFragment : Fragment() {
             //当滑动到最后一张(实际上展示为第一张的内容)时，立刻跳到第一张，滑动到第0张(展示为最后一张)时,同理
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
+                mTvCarouselTitle.text = finalCarouselPassage[position].title
                 if(position == finalCarouselPassage.size - 1) {
                     carouselViewPager2.setCurrentItem(1, false) //不带动画的跳转
                 } else {
