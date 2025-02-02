@@ -9,17 +9,18 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.generlas.winterexam.R
 import com.generlas.winterexam.repository.model.PassageInfo
 import com.generlas.winterexam.view.activity.WebViewActivity
 
 /**
- * description ： TODO:Passage的Adapter
+ * description ： TODO:Passage的Adapter(使用listAdapter)
  * date : 2025/1/28 20:16
  */
-class PassageAdapter(private val context: Context, private val passageList: List<PassageInfo>) :
-    RecyclerView.Adapter<PassageAdapter.ViewHolder>() {
+class PassageAdapter(private val context: Context) :
+    ListAdapter<PassageInfo, PassageAdapter.ViewHolder>(ItemDiffCallback()) {
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val passageAuthor: TextView = view.findViewById(R.id.tv_card_author)
@@ -36,7 +37,7 @@ class PassageAdapter(private val context: Context, private val passageList: List
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val passage = passageList[position]
+        val passage = getItem(position)
         if(passage.author != "") {
             holder.passageAuthor.text = passage.author
             holder.passageDate.text = passage.niceDate
@@ -58,10 +59,6 @@ class PassageAdapter(private val context: Context, private val passageList: List
         holder.passageCollect.setOnClickListener {
             Toast.makeText(context, "该功能暂未开放", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    override fun getItemCount(): Int {
-        return passageList.size
     }
 
 }

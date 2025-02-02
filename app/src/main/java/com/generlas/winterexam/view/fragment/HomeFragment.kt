@@ -33,9 +33,11 @@ class HomeFragment : Fragment() {
     lateinit var carouselViewPager2: ViewPager2
     lateinit var passageRecyclerView2: RecyclerView
     var carouselPassage: List<CarouselInfo> = listOf()
-    var passageCard: List<PassageInfo> = listOf()
+    var passageCard: MutableList<PassageInfo> = mutableListOf()
     lateinit var handler: Handler
     lateinit var runnable: Runnable
+    lateinit var passageAdapter: PassageAdapter
+    var page : Int = 1
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -87,20 +89,55 @@ class HomeFragment : Fragment() {
     private fun createPassageCard(passageList: List<PassageInfo>) {
         if (activity != null) {
             val mainActivity = activity as MainActivity
-            val passageAdapter = PassageAdapter(mainActivity, passageList)
+            passageAdapter = PassageAdapter(mainActivity)
             passageRecyclerView2.layoutManager = LinearLayoutManager(mainActivity)
             passageRecyclerView2.adapter = passageAdapter
+            passageAdapter.submitList(passageList)
+            listenAddPassage()
         }
     }
 
-    /*override fun OnItemClick(position: Int) {
-        if(activity != null) {
-            val mainActivity = activity as MainActivity
-            val intent = Intent(mainActivity, WebViewActivity::class.java)
-            intent.putExtra("url", passageCard[position].link)
-            startActivity(intent)
-        }
-    }*/
+    //监听滑倒最底部时
+    private fun listenAddPassage() {
+        passageRecyclerView2.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val totalItem = layoutManager.itemCount
+                val lastItem = layoutManager.findLastVisibleItemPosition()
+                if(lastItem == totalItem - 1) {
+                    loadMore()
+                }
+            }
+        })
+    }
+
+    //加载更多内容
+    private fun loadMore() {
+        val url = "https://www.wanandroid.com/article/list/$page/json"
+        page++
+        val httpUtil = HttpUtil()
+        httpUtil.Http_Get(url, object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.d("zzx", e.message.toString());
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string().toString()
+                val gson = Gson()
+                val json = JsonParser.parseString(responseData).asJsonObject
+                val jsonObject = json.getAsJsonObject("data")
+                val jsonData = jsonObject.getAsJsonArray("datas")
+                val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
+                requireActivity().runOnUiThread {
+                    val newPassageCard : List<PassageInfo> = gson.fromJson(jsonData, typeOf)
+                    //提交新的内容
+                    passageCard.addAll(newPassageCard)
+                    passageAdapter.submitList(passageCard.toList())
+                }
+            }
+        })
+    }
 
     //获取轮播图的信息
     private fun initCarouselPassage() {

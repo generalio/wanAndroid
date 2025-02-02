@@ -30,8 +30,10 @@ class PublicFragment : Fragment() {
     lateinit var tabLayout: TabLayout
     lateinit var recyclerView: RecyclerView
     lateinit var mainActivity: MainActivity
+    lateinit var adapter: PassageAdapter
+    var page: Int = 1
     var authorInfo: List<PublicAuthorInfo> = listOf()
-    var passageInfo: List<PassageInfo> = listOf()
+    var passageInfo: MutableList<PassageInfo> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,7 +86,8 @@ class PublicFragment : Fragment() {
     //加载对应作者的文章列表
     @SuppressLint("NotifyDataSetChanged")
     private fun setPassageList(id: Int) {
-        val url = "https://wanandroid.com/wxarticle/list/$id/1/json"
+        val url = "https://wanandroid.com/wxarticle/list/$id/0/json"
+        page = 1
         val httpUtil = HttpUtil()
         httpUtil.Http_Get(url, object : Callback {
             override fun onFailure(call: okhttp3.Call, e: IOException) {
@@ -100,10 +103,56 @@ class PublicFragment : Fragment() {
                 val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
                 mainActivity.runOnUiThread {
                     passageInfo = gson.fromJson(jsonArray, typeOf)
-                    val adapter = PassageAdapter(mainActivity, passageInfo)
+                    adapter = PassageAdapter(mainActivity)
                     recyclerView.layoutManager = LinearLayoutManager(mainActivity)
                     recyclerView.adapter = adapter
+                    adapter.submitList(passageInfo.toList())
                     adapter.notifyDataSetChanged()
+                    listenAddPassage(id)
+                }
+            }
+
+        })
+    }
+
+    //监听滑倒最底部
+    private fun listenAddPassage(id: Int) {
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val totalItem = layoutManager.itemCount
+                val lastItem = layoutManager.findLastVisibleItemPosition()
+                if(lastItem == totalItem - 1) {
+                    loadMore(id)
+                }
+            }
+        })
+    }
+
+    //加载新的内容
+    private fun loadMore(id: Int) {
+        val url = "https://wanandroid.com/wxarticle/list/$id/$page/json"
+        page++
+        val httpUtil = HttpUtil()
+        httpUtil.Http_Get(url, object : Callback {
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
+                Log.d("zzx", e.message.toString());
+            }
+
+            @SuppressLint("NotifyDataSetChanged")
+            override fun onResponse(call: okhttp3.Call, response: Response) {
+                val responseData = response.body?.string().toString()
+                val gson = Gson()
+                val jsonObject = JsonParser.parseString(responseData).asJsonObject
+                val jsonObjectData = jsonObject.getAsJsonObject("data")
+                val jsonArray = jsonObjectData.getAsJsonArray("datas")
+                val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
+                mainActivity.runOnUiThread {
+                    //加载新的内容
+                    val newPassageCard : List<PassageInfo> = gson.fromJson(jsonArray, typeOf)
+                    passageInfo.addAll(newPassageCard)
+                    adapter.submitList(passageInfo.toList())
                 }
             }
 
