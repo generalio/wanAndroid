@@ -21,6 +21,7 @@ import com.generlas.winterexam.view.adapter.NavigationContentAdapter
 import com.generlas.winterexam.view.adapter.NavigationListAdapter
 import com.generlas.winterexam.view.adapter.PassageAdapter
 import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -38,6 +39,7 @@ class NavigationFragment : Fragment(), NavigationListAdapter.OnItemClickListener
     lateinit var listRecyclerView: RecyclerView
     lateinit var mTvNavigation: TextView
     lateinit var contentRecyclerView: RecyclerView
+    lateinit var floatButton: FloatingActionButton
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,6 +56,11 @@ class NavigationFragment : Fragment(), NavigationListAdapter.OnItemClickListener
         listRecyclerView = view.findViewById(R.id.navigation_recyclerview)
         contentRecyclerView = view.findViewById(R.id.navigation_content_recyclerView)
         mTvNavigation = view.findViewById(R.id.tv_navigation)
+        floatButton = view.findViewById(R.id.float_navigation)
+
+        floatButton.setOnClickListener {
+            contentRecyclerView.scrollToPosition(0)
+        }
 
         getInfo()
     }

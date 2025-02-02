@@ -107,9 +107,6 @@ class MainActivity : AppCompatActivity() {
         //对抽屉懒里面的列表进行点击监听
         findViewById<NavigationView>(R.id.nav_view).setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_collect -> {
-                    Toast.makeText(this, "该功能暂未开放!", Toast.LENGTH_SHORT).show()
-                }
 
                 R.id.nav_about -> {
                     val intent = Intent(this, AboutActivity::class.java)

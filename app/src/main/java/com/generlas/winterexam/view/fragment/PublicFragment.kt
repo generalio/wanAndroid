@@ -16,6 +16,7 @@ import com.generlas.winterexam.repository.model.PublicAuthorInfo
 import com.generlas.winterexam.util.HttpUtil
 import com.generlas.winterexam.view.activity.MainActivity
 import com.generlas.winterexam.view.adapter.PassageAdapter
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.gson.Gson
 import com.google.gson.JsonParser
@@ -34,6 +35,7 @@ class PublicFragment : Fragment() {
     var page: Int = 1
     var authorInfo: List<PublicAuthorInfo> = listOf()
     var passageInfo: MutableList<PassageInfo> = mutableListOf()
+    lateinit var floatButton: FloatingActionButton
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,6 +51,11 @@ class PublicFragment : Fragment() {
         mainActivity = activity as MainActivity
         tabLayout = view.findViewById(R.id.tab_public)
         recyclerView = view.findViewById(R.id.public_recyclerView)
+        floatButton = view.findViewById(R.id.float_public)
+
+        floatButton.setOnClickListener {
+            recyclerView.scrollToPosition(0)
+        }
 
         getAuthorInfo()
 

@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,7 @@ import com.generlas.winterexam.view.activity.MainActivity
 import com.generlas.winterexam.view.adapter.PassageAdapter
 import com.generlas.winterexam.view.activity.WebViewActivity
 import com.generlas.winterexam.view.adapter.CarouselViewPager2Adapter
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
@@ -40,6 +42,7 @@ class HomeFragment : Fragment() {
     lateinit var passageAdapter: PassageAdapter
     var page : Int = 1
     lateinit var carouselAdapter: CarouselViewPager2Adapter
+    lateinit var floatButton: FloatingActionButton
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,6 +63,10 @@ class HomeFragment : Fragment() {
         passageRecyclerView2 = view.findViewById(R.id.home_recyclerView)
         initPassageCard()
 
+        floatButton = view.findViewById(R.id.float_home)
+        floatButton.setOnClickListener {
+            passageRecyclerView2.scrollToPosition(0)
+        }
     }
 
     //初始化文章列表数据

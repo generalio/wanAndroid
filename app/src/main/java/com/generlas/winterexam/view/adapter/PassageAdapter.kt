@@ -27,7 +27,6 @@ class PassageAdapter(private val context: Context) :
         val passageDate: TextView = view.findViewById(R.id.tv_card_date)
         val passageTitle: TextView = view.findViewById(R.id.tv_card_title)
         val passageChapterName: TextView = view.findViewById(R.id.tv_card_chapterName)
-        val passageCollect: ImageView = view.findViewById(R.id.iv_card_collect)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -53,11 +52,6 @@ class PassageAdapter(private val context: Context) :
             val intent = Intent(context, WebViewActivity::class.java)
             intent.putExtra("url", passage.link)
             context.startActivity(intent)
-        }
-
-        //收藏点击事件
-        holder.passageCollect.setOnClickListener {
-            Toast.makeText(context, "该功能暂未开放", Toast.LENGTH_SHORT).show()
         }
     }
 
