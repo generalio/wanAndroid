@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.generlas.winterexam.R
@@ -22,6 +23,7 @@ class CarouselViewPager2Adapter(private val context: Context, private val passag
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val carouselImage: ImageView = view.findViewById(R.id.iv_home_carousel)
+        val carouselTitle: TextView = view.findViewById(R.id.tv_carousel_text)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -33,6 +35,7 @@ class CarouselViewPager2Adapter(private val context: Context, private val passag
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val passage = passageData[position]
         val passageUrl = passage.imagePath
+        holder.carouselTitle.text = passage.title
         //使用glide加载网络资源图片
         Glide.with(holder.carouselImage.context)
             .load(passageUrl)

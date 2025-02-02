@@ -34,10 +34,12 @@ class HomeFragment : Fragment() {
     lateinit var passageRecyclerView2: RecyclerView
     var carouselPassage: List<CarouselInfo> = listOf()
     var passageCard: MutableList<PassageInfo> = mutableListOf()
+    var finalCarouselPassage: MutableList<CarouselInfo> = mutableListOf()
     lateinit var handler: Handler
     lateinit var runnable: Runnable
     lateinit var passageAdapter: PassageAdapter
     var page : Int = 1
+    lateinit var carouselAdapter: CarouselViewPager2Adapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -154,8 +156,8 @@ class HomeFragment : Fragment() {
                 val jsonObject = JsonParser.parseString(responseData).asJsonObject
                 val passageData = jsonObject.getAsJsonArray("data")
                 val typeOf = object : TypeToken<List<CarouselInfo>>() {}.type
-                carouselPassage = gson.fromJson(passageData, typeOf)
                 requireActivity().runOnUiThread {
+                    carouselPassage = gson.fromJson(passageData, typeOf)
                     createCarousel(carouselPassage)
                 }
             }
@@ -167,8 +169,13 @@ class HomeFragment : Fragment() {
     private fun createCarousel(carouselPassage: List<CarouselInfo>) {
         if (activity != null) {
             val mainActivity = activity as MainActivity
-            val carouselAdapter = CarouselViewPager2Adapter(mainActivity, carouselPassage)
+            //多添加两张，模拟最后一张到第一张
+            finalCarouselPassage.add(0, carouselPassage[carouselPassage.size - 1])
+            finalCarouselPassage.addAll(carouselPassage)
+            finalCarouselPassage.add(carouselPassage.size + 1, carouselPassage[0])
+            carouselAdapter = CarouselViewPager2Adapter(mainActivity, finalCarouselPassage.toList())
             carouselViewPager2.adapter = carouselAdapter
+            carouselViewPager2.currentItem = 1
             autoCarousel()
             handCarousel()
         }
@@ -188,6 +195,18 @@ class HomeFragment : Fragment() {
                     }
                 }
             }
+
+            //当滑动到最后一张(实际上展示为第一张的内容)时，立刻跳到第一张，滑动到第0张(展示为最后一张)时,同理
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                if(position == finalCarouselPassage.size - 1) {
+                    carouselViewPager2.setCurrentItem(1, false) //不带动画的跳转
+                } else {
+                    if(position == 0) {
+                        carouselViewPager2.setCurrentItem(finalCarouselPassage.size - 2, false)
+                    }
+                }
+            }
         })
     }
 
@@ -196,9 +215,14 @@ class HomeFragment : Fragment() {
         handler = Handler(Looper.getMainLooper())
         runnable = object : Runnable {
             override fun run() {
-                val nextPassage = (carouselViewPager2.currentItem + 1) % carouselPassage.size
-                carouselViewPager2.currentItem = nextPassage
-                handler.postDelayed(this, 3000)//三秒切换一次
+                val nextPassage = (carouselViewPager2.currentItem + 1) % finalCarouselPassage.size
+                if(carouselViewPager2.currentItem == finalCarouselPassage.size - 1) {
+                    carouselViewPager2.setCurrentItem(1, false)
+                    handler.postDelayed(this, 0)
+                } else {
+                    carouselViewPager2.currentItem = nextPassage
+                    handler.postDelayed(this, 3000)//三秒切换一次
+                }
             }
         }
         handler.postDelayed(runnable, 3000)
