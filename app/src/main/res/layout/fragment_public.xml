@@ -1,41 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     tools:context=".view.fragment.PublicFragment">
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_public"
+    <ProgressBar
+        android:id="@+id/public_progressbar"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        app:tabMode="scrollable"
-        app:tabSelectedTextColor="@color/blue"
-        app:tabGravity="fill"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/linearLayout3"
+        app:layout_constraintEnd_toEndOf="@+id/linearLayout3"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout3"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <FrameLayout
+    <LinearLayout
+        android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/public_recyclerView"
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_public"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingBottom="80dp"/>
+            android:layout_height="50dp"
+            app:tabGravity="fill"
+            app:tabMode="scrollable"
+            app:tabSelectedTextColor="@color/blue" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/float_public"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginBottom="96dp"
-            android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_top"
-            app:backgroundTint="@color/blue"
-            app:tint="@android:color/white" />
-    </FrameLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/public_recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="80dp" />
 
-</LinearLayout>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/float_public"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="96dp"
+                android:src="@drawable/ic_top"
+                app:backgroundTint="@color/blue"
+                app:tint="@android:color/white" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

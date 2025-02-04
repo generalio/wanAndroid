@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,6 +37,7 @@ class PublicFragment : Fragment() {
     var authorInfo: List<PublicAuthorInfo> = listOf()
     var passageInfo: MutableList<PassageInfo> = mutableListOf()
     lateinit var floatButton: FloatingActionButton
+    lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,6 +51,7 @@ class PublicFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         mainActivity = activity as MainActivity
+        progressBar = view.findViewById(R.id.public_progressbar)
         tabLayout = view.findViewById(R.id.tab_public)
         recyclerView = view.findViewById(R.id.public_recyclerView)
         floatButton = view.findViewById(R.id.float_public)
@@ -75,6 +78,8 @@ class PublicFragment : Fragment() {
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 if (tab != null) {
+                    adapter.submitList(listOf())
+                    progressBar.visibility = View.VISIBLE
                     setPassageList(authorInfo[tab.position].id)
                 }
             }
@@ -109,12 +114,13 @@ class PublicFragment : Fragment() {
                 val jsonArray = jsonObjectData.getAsJsonArray("datas")
                 val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
                 mainActivity.runOnUiThread {
+                    progressBar.visibility = View.GONE
                     passageInfo = gson.fromJson(jsonArray, typeOf)
                     adapter = PassageAdapter(mainActivity)
                     recyclerView.layoutManager = LinearLayoutManager(mainActivity)
                     recyclerView.adapter = adapter
                     adapter.submitList(passageInfo.toList())
-                    adapter.notifyDataSetChanged()
+                    //adapter.notifyDataSetChanged()
                     listenAddPassage(id)
                 }
             }

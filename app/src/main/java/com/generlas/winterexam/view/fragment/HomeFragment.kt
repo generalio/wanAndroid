@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,6 +18,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.generlas.winterexam.R
 import com.generlas.winterexam.repository.model.CarouselInfo
 import com.generlas.winterexam.repository.model.PassageInfo
+import com.generlas.winterexam.util.CarouselDot
 import com.generlas.winterexam.util.HttpUtil
 import com.generlas.winterexam.view.activity.MainActivity
 import com.generlas.winterexam.view.adapter.PassageAdapter
@@ -45,6 +47,8 @@ class HomeFragment : Fragment() {
     lateinit var carouselAdapter: CarouselViewPager2Adapter
     lateinit var floatButton: FloatingActionButton
     lateinit var mTvCarouselTitle: TextView
+    lateinit var dotView: CarouselDot
+    lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,6 +69,8 @@ class HomeFragment : Fragment() {
         passageRecyclerView2 = view.findViewById(R.id.home_recyclerView)
         initPassageCard()
 
+        progressBar = view.findViewById(R.id.home_progressbar)
+        dotView = view.findViewById(R.id.home_carouselDot)
         mTvCarouselTitle = view.findViewById(R.id.tv_carousel_text)
         floatButton = view.findViewById(R.id.float_home)
         floatButton.setOnClickListener {
@@ -90,6 +96,7 @@ class HomeFragment : Fragment() {
                 val jsonData = jsonObject.getAsJsonArray("datas")
                 val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
                 requireActivity().runOnUiThread {
+                    progressBar.visibility = View.GONE
                     passageCard = gson.fromJson(jsonData, typeOf)
                     createPassageCard(passageCard)
                 }
@@ -186,6 +193,8 @@ class HomeFragment : Fragment() {
             carouselAdapter = CarouselViewPager2Adapter(mainActivity, finalCarouselPassage.toList())
             carouselViewPager2.adapter = carouselAdapter
             carouselViewPager2.currentItem = 1
+            dotView.initDots(carouselPassage.size, 0)
+            mTvCarouselTitle.text = finalCarouselPassage[1].title
             autoCarousel()
             handCarousel()
         }
@@ -210,12 +219,16 @@ class HomeFragment : Fragment() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 mTvCarouselTitle.text = finalCarouselPassage[position].title
-                if(position == finalCarouselPassage.size - 1) {
-                    carouselViewPager2.setCurrentItem(1, false) //不带动画的跳转
+                if (position == finalCarouselPassage.size - 1) {
+                    dotView.changeDots(0)
+                    carouselViewPager2.setCurrentItem(1, false)
+
+                } else if (position == 0) {
+                    dotView.changeDots(carouselPassage.size - 1)
+                    carouselViewPager2.setCurrentItem(finalCarouselPassage.size - 2, false)
+
                 } else {
-                    if(position == 0) {
-                        carouselViewPager2.setCurrentItem(finalCarouselPassage.size - 2, false)
-                    }
+                    dotView.changeDots(position - 1)
                 }
             }
         })
@@ -226,14 +239,14 @@ class HomeFragment : Fragment() {
         handler = Handler(Looper.getMainLooper())
         runnable = object : Runnable {
             override fun run() {
-                val nextPassage = (carouselViewPager2.currentItem + 1) % finalCarouselPassage.size
-                if(carouselViewPager2.currentItem == finalCarouselPassage.size - 1) {
-                    carouselViewPager2.setCurrentItem(1, false)
-                    handler.postDelayed(this, 0)
-                } else {
-                    carouselViewPager2.currentItem = nextPassage
-                    handler.postDelayed(this, 3000)//三秒切换一次
+                val nextPassage = carouselViewPager2.currentItem + 1
+                if(nextPassage == finalCarouselPassage.size - 1) {
+                    carouselViewPager2.setCurrentItem(1,false)
                 }
+                else {
+                    carouselViewPager2.currentItem = nextPassage
+                }
+                handler.postDelayed(this, 3000)
             }
         }
         handler.postDelayed(runnable, 3000)

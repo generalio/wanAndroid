@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,6 +41,7 @@ class NavigationFragment : Fragment(), NavigationListAdapter.OnItemClickListener
     lateinit var mTvNavigation: TextView
     lateinit var contentRecyclerView: RecyclerView
     lateinit var floatButton: FloatingActionButton
+    lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,6 +55,7 @@ class NavigationFragment : Fragment(), NavigationListAdapter.OnItemClickListener
         super.onViewCreated(view, savedInstanceState)
 
         mainActivity = activity as MainActivity
+        progressBar = view.findViewById(R.id.navigation_progressbar)
         listRecyclerView = view.findViewById(R.id.navigation_recyclerview)
         contentRecyclerView = view.findViewById(R.id.navigation_content_recyclerView)
         mTvNavigation = view.findViewById(R.id.tv_navigation)
@@ -81,6 +84,7 @@ class NavigationFragment : Fragment(), NavigationListAdapter.OnItemClickListener
                 val jsonArray = jsonObject.getAsJsonArray("data")
                 val typeOf = object : TypeToken<List<NavigationInfo>>() {}.type
                 mainActivity.runOnUiThread {
+                    progressBar.visibility = View.GONE
                     navigationInfo = gson.fromJson(jsonArray, typeOf)
                     initView()
                 }
