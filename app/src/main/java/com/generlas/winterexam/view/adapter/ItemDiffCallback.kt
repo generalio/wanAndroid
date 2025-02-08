@@ -1,7 +1,7 @@
 package com.generlas.winterexam.view.adapter
 
 import androidx.recyclerview.widget.DiffUtil
-import com.generlas.winterexam.repository.model.PassageInfo
+import com.generlas.winterexam.model.PassageInfo
 
 /**
  * description ： TODO:比较新旧数据项，实现差分刷新

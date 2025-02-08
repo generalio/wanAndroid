@@ -10,7 +10,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import com.generlas.winterexam.R
-import com.generlas.winterexam.util.HttpUtil
+import com.generlas.winterexam.contract.SignContract
+import com.generlas.winterexam.model.HttpUtil
+import com.generlas.winterexam.model.SignModel
+import com.generlas.winterexam.presenter.SignPresenter
 import com.google.android.material.textfield.TextInputLayout
 import okhttp3.Call
 import okhttp3.Callback
@@ -18,7 +21,7 @@ import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
 
-class SignActivity : AppCompatActivity() {
+class SignActivity : AppCompatActivity(), SignContract.view {
 
     lateinit var mEtUsername: EditText
     lateinit var mEtPassword: EditText
@@ -28,10 +31,14 @@ class SignActivity : AppCompatActivity() {
     lateinit var mTilRePassword: TextInputLayout
     lateinit var mIvClose: ImageView
     lateinit var mBtnSign: Button
+    lateinit var presenter: SignPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign)
+
+        presenter = SignPresenter(this, SignModel(this))
+
         initView()
         initEvent()
     }
@@ -81,46 +88,14 @@ class SignActivity : AppCompatActivity() {
                     if (password != rePassword) {
                         mTilRePassword.setError("两次密码输入不相同!")
                     } else {
-                        signRequest(username, password, rePassword)
+                        presenter.onSign(username, password, rePassword)
                     }
                 }
             }
         }
     }
 
-    private fun signRequest(username: String, password: String, rePassword: String) {
-        val url = "https://www.wanandroid.com/user/register"
-        val signData =
-            mapOf("username" to username, "password" to password, "repassword" to rePassword)
-        val httpUtil = HttpUtil()
-        httpUtil.Http_Post(url, signData, object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                Log.d("zzx", e.message.toString());
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string().toString()
-                val (errorCode, errorMsg) = isSucceed(responseData)
-                if (errorCode == -1) {
-                    signFailed(errorMsg)
-                } else {
-                    val jsonObject = JSONObject(responseData)
-                    val dataObject = jsonObject.getJSONObject("data")
-                    val getUsername = dataObject.getString("username")
-                    signSucceed(getUsername)
-                }
-            }
-        })
-    }
-
-    private fun isSucceed(jsonData: String): Pair<Int, String> {
-        val jsonObject = JSONObject(jsonData)
-        val errorCode = jsonObject.getInt("errorCode")
-        val errorMsg = jsonObject.getString("errorMsg")
-        return Pair(errorCode, errorMsg)
-    }
-
-    private fun signFailed(errorMsg: String) {
+    override fun signFailed(errorMsg: String) {
         runOnUiThread {
             AlertDialog.Builder(this).apply {
                 setTitle("注册失败!")
@@ -132,7 +107,7 @@ class SignActivity : AppCompatActivity() {
         }
     }
 
-    private fun signSucceed(username: String) {
+    override fun signSucceed(username: String) {
         runOnUiThread {
             AlertDialog.Builder(this).apply {
                 setTitle("注册成功")
@@ -155,5 +130,9 @@ class SignActivity : AppCompatActivity() {
         result.putExtra("getUsername", username)
         setResult(RESULT_OK, result)
         finish()
+    }
+
+    override fun showError(message: String) {
+        Log.d("zzx",message)
     }
 }

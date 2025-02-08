@@ -15,8 +15,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import com.generlas.winterexam.R
-import com.generlas.winterexam.repository.model.UserInfo
-import com.generlas.winterexam.util.HttpUtil
+import com.generlas.winterexam.contract.LoginContract
+import com.generlas.winterexam.model.UserInfo
+import com.generlas.winterexam.model.HttpUtil
+import com.generlas.winterexam.model.LoginModel
+import com.generlas.winterexam.model.MainModel
+import com.generlas.winterexam.presenter.LoginPresenter
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.google.gson.JsonParser
@@ -26,7 +30,7 @@ import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity() , LoginContract.View {
 
     lateinit var mEtAccount: EditText
     lateinit var mEtPassword: EditText
@@ -37,10 +41,14 @@ class LoginActivity : AppCompatActivity() {
     lateinit var mCbRemember: CheckBox
     lateinit var mIvClose: ImageView
     lateinit var startForResult: ActivityResultLauncher<Intent>
+    lateinit var presenter: LoginContract.Presenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+
+        presenter = LoginPresenter(this, LoginModel(this))
+
         initView()
         receiveSign()
         initEvent()
@@ -90,7 +98,7 @@ class LoginActivity : AppCompatActivity() {
                 if (mEtPassword.text.toString() == "") {
                     mTilPassword.setError("密码不能为空")
                 } else {
-                    login()
+                    presenter.onLogin(mEtAccount.text.toString(), mEtPassword.text.toString())
                 }
             }
         }
@@ -103,71 +111,23 @@ class LoginActivity : AppCompatActivity() {
         if (mCbRemember.isChecked) {
             val username = mEtAccount.text.toString()
             val password = mEtPassword.text.toString()
-            val editor = getSharedPreferences("userData", Context.MODE_PRIVATE).edit()
-            editor.putString("username", username)
-            editor.putString("password", password)
-            editor.apply()
+            presenter.passwordRemember(username, password)
         }
     }
 
     //初始化账号密码
     private fun initInfo() {
-        val output = getSharedPreferences("userData", Context.MODE_PRIVATE)
-        val username: String = output.getString("username", "").toString()
-        val password: String = output.getString("password", "").toString()
+        val (username, password) = presenter.initInfo()
         mEtAccount.setText(username)
         mEtPassword.setText(password)
     }
 
-    //登陆操作
-    private fun login() {
-        val urlLogin: String = "https://www.wanandroid.com/user/login"
-        val username: String = mEtAccount.text.toString()
-        val password: String = mEtPassword.text.toString()
-
-        val userData = mapOf("username" to username, "password" to password)
-        val httpUtil = HttpUtil()
-        httpUtil.Http_Post(urlLogin, userData, object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                Log.d("zzx", e.message.toString())
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                val (errorCode, errorMsg) = checkIsSucceed(responseData.toString())
-                if (errorCode != -1) {
-                    //解析json数据
-                    val gson = Gson()
-                    val jsonObject = JsonParser.parseString(responseData).asJsonObject
-                    val userData = jsonObject.getAsJsonObject("data")
-                    val user = gson.fromJson(userData, UserInfo::class.java)
-                    persistentReserved(username, password)
-                    loginSucceed(user)
-                } else {
-                    loginFailed()
-                }
-            }
-        })
-    }
-
-    //检测是否登陆成功并返回错误代码和信息
-    private fun checkIsSucceed(jsonData: String): Pair<Int, String> {
-        val jsonObject = JSONObject(jsonData)
-        val errorCode = jsonObject.getInt("errorCode")
-        val errorMsg = jsonObject.getString("errorMsg")
-        return Pair(errorCode, errorMsg)
-    }
-
-    //持久化保存账号密码
-    private fun persistentReserved(username: String, password: String) {
-        val sharedPreferences = getSharedPreferences("Cookies", Context.MODE_PRIVATE).edit()
-        sharedPreferences.putString("username", username)
-        sharedPreferences.putString("password", password)
-        sharedPreferences.apply()
+    override fun showError(message: String) {
+        Log.d("zzx",message)
     }
 
     //登陆失败时
-    private fun loginFailed() {
+    override fun loginFailed() {
         runOnUiThread {
             AlertDialog.Builder(this).apply {
                 setTitle("登录失败！")
@@ -180,15 +140,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     //登陆成功时
-    private fun loginSucceed(user: UserInfo) {
-        val sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE).edit()
-        sharedPreferences.putString("username", user.username)
-        sharedPreferences.putString("nickname", user.nickname)
-        sharedPreferences.putInt("id", user.id)
-        sharedPreferences.putInt("coinCount", user.coinCount)
-        sharedPreferences.putString("email", user.email)
-        sharedPreferences.apply()
-
+   override fun loginSucceed(user: UserInfo) {
         val resultIntent = Intent()
         resultIntent.putExtra("username", user.username)
         setResult(RESULT_OK, resultIntent)

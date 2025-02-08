@@ -1,6 +1,5 @@
 package com.generlas.winterexam.view.fragment
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -8,7 +7,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -16,13 +14,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.generlas.winterexam.R
-import com.generlas.winterexam.repository.model.CarouselInfo
-import com.generlas.winterexam.repository.model.PassageInfo
+import com.generlas.winterexam.contract.HomeContract
+import com.generlas.winterexam.model.CarouselInfo
+import com.generlas.winterexam.model.HomeModel
+import com.generlas.winterexam.model.PassageInfo
+import com.generlas.winterexam.model.HttpUtil
+import com.generlas.winterexam.presenter.HomePresenter
 import com.generlas.winterexam.util.CarouselDot
-import com.generlas.winterexam.util.HttpUtil
 import com.generlas.winterexam.view.activity.MainActivity
 import com.generlas.winterexam.view.adapter.PassageAdapter
-import com.generlas.winterexam.view.activity.WebViewActivity
 import com.generlas.winterexam.view.adapter.CarouselViewPager2Adapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
@@ -33,7 +33,7 @@ import okhttp3.Callback
 import okhttp3.Response
 import java.io.IOException
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), HomeContract.view {
 
     lateinit var carouselViewPager2: ViewPager2
     lateinit var passageRecyclerView2: RecyclerView
@@ -49,6 +49,7 @@ class HomeFragment : Fragment() {
     lateinit var mTvCarouselTitle: TextView
     lateinit var dotView: CarouselDot
     lateinit var progressBar: ProgressBar
+    lateinit var presenter: HomePresenter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,13 +62,15 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        presenter = HomePresenter(this, HomeModel())
+
         //创建轮播图
         carouselViewPager2 = view.findViewById(R.id.home_viewpager2)
-        initCarouselPassage()
+        presenter.initCarousel()
 
         //创建文章Card
         passageRecyclerView2 = view.findViewById(R.id.home_recyclerView)
-        initPassageCard()
+        presenter.initPassage()
 
         progressBar = view.findViewById(R.id.home_progressbar)
         dotView = view.findViewById(R.id.home_carouselDot)
@@ -78,41 +81,34 @@ class HomeFragment : Fragment() {
         }
     }
 
-    //初始化文章列表数据
-    private fun initPassageCard() {
-
-        val url = "https://www.wanandroid.com/article/list/0/json"
-        val httpUtil = HttpUtil()
-        httpUtil.Http_Get(url, object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                Log.d("zzx", e.message.toString());
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string().toString()
-                val gson = Gson()
-                val json = JsonParser.parseString(responseData).asJsonObject
-                val jsonObject = json.getAsJsonObject("data")
-                val jsonData = jsonObject.getAsJsonArray("datas")
-                val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
-                requireActivity().runOnUiThread {
-                    progressBar.visibility = View.GONE
-                    passageCard = gson.fromJson(jsonData, typeOf)
-                    createPassageCard(passageCard)
-                }
-            }
-        })
+    override fun showError(message: String) {
+        Log.d("zzx",message)
     }
 
     //创建文章列表
-    private fun createPassageCard(passageList: List<PassageInfo>) {
+    override fun createPassageCard(passageData: List<PassageInfo>) {
         if (activity != null) {
             val mainActivity = activity as MainActivity
-            passageAdapter = PassageAdapter(mainActivity)
-            passageRecyclerView2.layoutManager = LinearLayoutManager(mainActivity)
-            passageRecyclerView2.adapter = passageAdapter
-            passageAdapter.submitList(passageList)
-            listenAddPassage()
+            mainActivity.runOnUiThread {
+                progressBar.visibility =View.GONE
+                passageCard.addAll(passageData)
+                passageAdapter = PassageAdapter(mainActivity)
+                passageRecyclerView2.layoutManager = LinearLayoutManager(mainActivity)
+                passageRecyclerView2.adapter = passageAdapter
+                passageAdapter.submitList(passageData)
+                listenAddPassage()
+            }
+        }
+    }
+
+    //加载更多文章
+    override fun loadMorePassageCard(passageData: List<PassageInfo>) {
+        passageCard.addAll(passageData)
+        if(activity != null) {
+            val mainActivity = activity as MainActivity
+            mainActivity.runOnUiThread {
+                passageAdapter.submitList(passageCard.toList())
+            }
         }
     }
 
@@ -125,78 +121,30 @@ class HomeFragment : Fragment() {
                 val totalItem = layoutManager.itemCount
                 val lastItem = layoutManager.findLastVisibleItemPosition()
                 if(lastItem == totalItem - 1) {
-                    loadMore()
+                    presenter.loadMore(page)
+                    page++
                 }
             }
-        })
-    }
-
-    //加载更多内容
-    private fun loadMore() {
-        val url = "https://www.wanandroid.com/article/list/$page/json"
-        page++
-        val httpUtil = HttpUtil()
-        httpUtil.Http_Get(url, object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                Log.d("zzx", e.message.toString());
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string().toString()
-                val gson = Gson()
-                val json = JsonParser.parseString(responseData).asJsonObject
-                val jsonObject = json.getAsJsonObject("data")
-                val jsonData = jsonObject.getAsJsonArray("datas")
-                val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
-                requireActivity().runOnUiThread {
-                    val newPassageCard : List<PassageInfo> = gson.fromJson(jsonData, typeOf)
-                    //提交新的内容
-                    passageCard.addAll(newPassageCard)
-                    passageAdapter.submitList(passageCard.toList())
-                }
-            }
-        })
-    }
-
-    //获取轮播图的信息
-    private fun initCarouselPassage() {
-        val url = "https://www.wanandroid.com/banner/json"
-        val httpUtil = HttpUtil()
-        httpUtil.Http_Get(url, object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                Log.d("zzx", e.message.toString());
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string().toString()
-                val gson = Gson()
-                val jsonObject = JsonParser.parseString(responseData).asJsonObject
-                val passageData = jsonObject.getAsJsonArray("data")
-                val typeOf = object : TypeToken<List<CarouselInfo>>() {}.type
-                requireActivity().runOnUiThread {
-                    carouselPassage = gson.fromJson(passageData, typeOf)
-                    createCarousel(carouselPassage)
-                }
-            }
-
         })
     }
 
     //加载轮播图适配器
-    private fun createCarousel(carouselPassage: List<CarouselInfo>) {
+    override fun createCarousel(carouselPassage: List<CarouselInfo>) {
         if (activity != null) {
             val mainActivity = activity as MainActivity
-            //多添加两张，模拟最后一张到第一张
-            finalCarouselPassage.add(0, carouselPassage[carouselPassage.size - 1])
-            finalCarouselPassage.addAll(carouselPassage)
-            finalCarouselPassage.add(carouselPassage.size + 1, carouselPassage[0])
-            carouselAdapter = CarouselViewPager2Adapter(mainActivity, finalCarouselPassage.toList())
-            carouselViewPager2.adapter = carouselAdapter
-            carouselViewPager2.currentItem = 1
-            dotView.initDots(carouselPassage.size, 0)
-            mTvCarouselTitle.text = finalCarouselPassage[1].title
-            autoCarousel()
-            handCarousel()
+            mainActivity.runOnUiThread {
+                //多添加两张，模拟最后一张到第一张
+                finalCarouselPassage.add(0, carouselPassage[carouselPassage.size - 1])
+                finalCarouselPassage.addAll(carouselPassage)
+                finalCarouselPassage.add(carouselPassage.size + 1, carouselPassage[0])
+                carouselAdapter = CarouselViewPager2Adapter(mainActivity, finalCarouselPassage.toList())
+                carouselViewPager2.adapter = carouselAdapter
+                carouselViewPager2.currentItem = 1
+                dotView.initDots(carouselPassage.size, 0)
+                mTvCarouselTitle.text = finalCarouselPassage[1].title
+                autoCarousel()
+                handCarousel()
+            }
         }
     }
 

@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.generlas.winterexam.R
-import com.generlas.winterexam.repository.model.PassageInfo
+import com.generlas.winterexam.model.PassageInfo
 import com.generlas.winterexam.view.activity.WebViewActivity
 
 /**

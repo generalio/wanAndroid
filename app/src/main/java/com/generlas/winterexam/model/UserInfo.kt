@@ -1,4 +1,4 @@
-package com.generlas.winterexam.repository.model
+package com.generlas.winterexam.model
 
 /**
  * description ： TODO:个人信息

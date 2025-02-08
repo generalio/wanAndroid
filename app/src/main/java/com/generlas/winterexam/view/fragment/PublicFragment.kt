@@ -2,7 +2,6 @@ package com.generlas.winterexam.view.fragment
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.telecom.Call
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,32 +11,27 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.generlas.winterexam.R
-import com.generlas.winterexam.repository.model.PassageInfo
-import com.generlas.winterexam.repository.model.PublicAuthorInfo
-import com.generlas.winterexam.util.HttpUtil
+import com.generlas.winterexam.contract.PublicContract
+import com.generlas.winterexam.model.PassageInfo
+import com.generlas.winterexam.model.PublicAuthorInfo
+import com.generlas.winterexam.model.PublicModel
+import com.generlas.winterexam.presenter.PublicPresenter
 import com.generlas.winterexam.view.activity.MainActivity
 import com.generlas.winterexam.view.adapter.PassageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
-import com.google.gson.Gson
-import com.google.gson.JsonParser
-import com.google.gson.reflect.TypeToken
-import okhttp3.Callback
-import okhttp3.Response
-import java.io.IOException
-import java.lang.reflect.Type
 
-class PublicFragment : Fragment() {
+class PublicFragment : Fragment() , PublicContract.view {
 
     lateinit var tabLayout: TabLayout
     lateinit var recyclerView: RecyclerView
     lateinit var mainActivity: MainActivity
     lateinit var adapter: PassageAdapter
     var page: Int = 1
-    var authorInfo: List<PublicAuthorInfo> = listOf()
     var passageInfo: MutableList<PassageInfo> = mutableListOf()
     lateinit var floatButton: FloatingActionButton
     lateinit var progressBar: ProgressBar
+    lateinit var presenter: PublicPresenter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +44,8 @@ class PublicFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        presenter = PublicPresenter(this, PublicModel())
+
         mainActivity = activity as MainActivity
         progressBar = view.findViewById(R.id.public_progressbar)
         tabLayout = view.findViewById(R.id.tab_public)
@@ -60,72 +56,56 @@ class PublicFragment : Fragment() {
             recyclerView.scrollToPosition(0)
         }
 
-        getAuthorInfo()
+        presenter.initAuthor()
 
     }
 
     //加载tablayout布局以及对应的文章列表
-    private fun setTab() {
+    override fun setAuthorInfo(authorInfo: List<PublicAuthorInfo>) {
 
-        //加载公众号列表
-        for (author in authorInfo) {
-            tabLayout.addTab(tabLayout.newTab().setText(author.name))
-        }
+        mainActivity.runOnUiThread {
+            //加载公众号列表
+            for (author in authorInfo) {
+                tabLayout.addTab(tabLayout.newTab().setText(author.name))
+            }
 
-        setPassageList(authorInfo[0].id)
+            presenter.initPassage(authorInfo[0].id)
 
-        //对tab选择的监听
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                if (tab != null) {
-                    adapter.submitList(listOf())
-                    progressBar.visibility = View.VISIBLE
-                    setPassageList(authorInfo[tab.position].id)
+            //对tab选择的监听
+            tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    if (tab != null) {
+                        adapter.submitList(listOf())
+                        progressBar.visibility = View.VISIBLE
+                        presenter.initPassage(authorInfo[tab.position].id)
+                    }
                 }
-            }
 
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
+                override fun onTabUnselected(tab: TabLayout.Tab?) {
 
-            }
+                }
 
-            override fun onTabReselected(tab: TabLayout.Tab?) {
+                override fun onTabReselected(tab: TabLayout.Tab?) {
 
-            }
+                }
 
-        })
+            })
+        }
     }
 
     //加载对应作者的文章列表
     @SuppressLint("NotifyDataSetChanged")
-    private fun setPassageList(id: Int) {
-        val url = "https://wanandroid.com/wxarticle/list/$id/0/json"
-        page = 1
-        val httpUtil = HttpUtil()
-        httpUtil.Http_Get(url, object : Callback {
-            override fun onFailure(call: okhttp3.Call, e: IOException) {
-                Log.d("zzx", e.message.toString());
-            }
-
-            override fun onResponse(call: okhttp3.Call, response: Response) {
-                val responseData = response.body?.string().toString()
-                val gson = Gson()
-                val jsonObject = JsonParser.parseString(responseData).asJsonObject
-                val jsonObjectData = jsonObject.getAsJsonObject("data")
-                val jsonArray = jsonObjectData.getAsJsonArray("datas")
-                val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
-                mainActivity.runOnUiThread {
-                    progressBar.visibility = View.GONE
-                    passageInfo = gson.fromJson(jsonArray, typeOf)
-                    adapter = PassageAdapter(mainActivity)
-                    recyclerView.layoutManager = LinearLayoutManager(mainActivity)
-                    recyclerView.adapter = adapter
-                    adapter.submitList(passageInfo.toList())
-                    //adapter.notifyDataSetChanged()
-                    listenAddPassage(id)
-                }
-            }
-
-        })
+    override fun createPassageList(passageData: List<PassageInfo>,id: Int) {
+        mainActivity.runOnUiThread {
+            page = 1
+            passageInfo = passageData.toMutableList()
+            progressBar.visibility = View.GONE
+            adapter = PassageAdapter(mainActivity)
+            recyclerView.layoutManager = LinearLayoutManager(mainActivity)
+            recyclerView.adapter = adapter
+            adapter.submitList(passageData)
+            listenAddPassage(id)
+        }
     }
 
     //监听滑倒最底部
@@ -137,63 +117,24 @@ class PublicFragment : Fragment() {
                 val totalItem = layoutManager.itemCount
                 val lastItem = layoutManager.findLastVisibleItemPosition()
                 if(lastItem == totalItem - 1) {
-                    loadMore(id)
+                    presenter.loadMore(id, page)
+                    page++
                 }
             }
         })
     }
 
     //加载新的内容
-    private fun loadMore(id: Int) {
-        val url = "https://wanandroid.com/wxarticle/list/$id/$page/json"
-        page++
-        val httpUtil = HttpUtil()
-        httpUtil.Http_Get(url, object : Callback {
-            override fun onFailure(call: okhttp3.Call, e: IOException) {
-                Log.d("zzx", e.message.toString());
-            }
-
-            @SuppressLint("NotifyDataSetChanged")
-            override fun onResponse(call: okhttp3.Call, response: Response) {
-                val responseData = response.body?.string().toString()
-                val gson = Gson()
-                val jsonObject = JsonParser.parseString(responseData).asJsonObject
-                val jsonObjectData = jsonObject.getAsJsonObject("data")
-                val jsonArray = jsonObjectData.getAsJsonArray("datas")
-                val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
-                mainActivity.runOnUiThread {
-                    //加载新的内容
-                    val newPassageCard : List<PassageInfo> = gson.fromJson(jsonArray, typeOf)
-                    passageInfo.addAll(newPassageCard)
-                    adapter.submitList(passageInfo.toList())
-                }
-            }
-
-        })
+    override fun loadMorePassage(passageData: List<PassageInfo>) {
+        mainActivity.runOnUiThread {
+            //加载新的内容
+            passageInfo.addAll(passageData)
+            adapter.submitList(passageInfo.toList())
+        }
     }
 
-    //获取公众号作者信息
-    private fun getAuthorInfo() {
-        val url = "https://wanandroid.com/wxarticle/chapters/json"
-        val httpUtil = HttpUtil()
-        httpUtil.Http_Get(url, object : Callback {
-            override fun onFailure(call: okhttp3.Call, e: IOException) {
-                Log.d("zzx", e.message.toString());
-            }
-
-            override fun onResponse(call: okhttp3.Call, response: Response) {
-                val responseData = response.body?.string().toString()
-                val gson = Gson()
-                val jsonObject = JsonParser.parseString(responseData).asJsonObject
-                val authorArray = jsonObject.getAsJsonArray("data")
-                val typeOf = object : TypeToken<List<PublicAuthorInfo>>() {}.type
-                mainActivity.runOnUiThread {
-                    authorInfo = gson.fromJson(authorArray, typeOf)
-                    setTab()
-                }
-            }
-
-        })
+    override fun showError(message: String) {
+        Log.d("zzx",message)
     }
 
 }

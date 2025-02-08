@@ -3,17 +3,13 @@ package com.generlas.winterexam.view.adapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import android.media.RouteListingPreference.Item
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView.OnItemClickListener
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.generlas.winterexam.R
-import com.generlas.winterexam.repository.model.NavigationInfo
+import com.generlas.winterexam.model.NavigationInfo
 
 /**
  * description ： TODO:导航列表的Adapter

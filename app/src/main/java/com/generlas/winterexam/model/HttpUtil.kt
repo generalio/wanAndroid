@@ -1,8 +1,5 @@
-package com.generlas.winterexam.util
+package com.generlas.winterexam.model
 
-import android.annotation.SuppressLint
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request

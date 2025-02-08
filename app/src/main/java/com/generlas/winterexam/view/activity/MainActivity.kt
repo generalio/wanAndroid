@@ -21,8 +21,11 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.generlas.winterexam.R
-import com.generlas.winterexam.repository.model.UserInfo
-import com.generlas.winterexam.util.HttpUtil
+import com.generlas.winterexam.contract.MainContract
+import com.generlas.winterexam.model.UserInfo
+import com.generlas.winterexam.model.HttpUtil
+import com.generlas.winterexam.model.MainModel
+import com.generlas.winterexam.presenter.MainPresenter
 import com.generlas.winterexam.view.adapter.ViewPager2Adapter
 import com.generlas.winterexam.view.fragment.HomeFragment
 import com.generlas.winterexam.view.fragment.NavigationFragment
@@ -38,17 +41,19 @@ import org.json.JSONObject
 import java.io.IOException
 import java.util.ArrayList
 
-
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainContract.View {
+    lateinit var presenter: MainContract.Presenter
     lateinit var toggle: ActionBarDrawerToggle
     lateinit var startForResult: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        presenter = MainPresenter(this, MainModel(this))
+
         setNavigationColumn()
         setBottomNavigation()
-        CookiesRequest()
 
         // 注册 ActivityResultLauncher
         startForResult =
@@ -56,23 +61,20 @@ class MainActivity : AppCompatActivity() {
                 if (result.resultCode == RESULT_OK) { //如果接收到LoginActivity返回的数据
                     val data: Intent? = result.data
                     val getUsername = data?.getStringExtra("username").toString()
-                    setUsername(getUsername)
+                    presenter.onLogin()
                 }
             }
         setButton()
+        presenter.onLogin()
     }
 
-    //为侧边栏顶部设置登录的用户名
-    @SuppressLint("SetTextI18n")
-    private fun setUsername(username: String) {
+    override fun showInfo(username: String, coinCount: Int) {
         val navigationView: NavigationView = findViewById(R.id.nav_view)
         val headerView: View = navigationView.getHeaderView(0)
         val headerUsername: TextView = headerView.findViewById(R.id.tv_head_username)
         val headerButton: Button = headerView.findViewById(R.id.btn_head_login)
         val headerCollectCoins: TextView = headerView.findViewById(R.id.tv_head_collectCoins)
         headerUsername.setText(username)
-        val sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE)
-        val coinCount = sharedPreferences.getInt("coinCount", -1)
         if (coinCount == -1) {
             headerCollectCoins.setText("积分:--")
         } else {
@@ -87,6 +89,14 @@ class MainActivity : AppCompatActivity() {
                 headerCollectCoins.setText("积分:--")
             }
         }
+    }
+
+    override fun showLogout() {
+        Toast.makeText(this, "已退出登录!", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showError(message: String) {
+        Log.d("zzx", message)
     }
 
     //对toolbar+drawerlayout的基本设置
@@ -153,101 +163,11 @@ class MainActivity : AppCompatActivity() {
                 AlertDialog.Builder(this).apply {
                     setMessage("确认退出登录？")
                     setCancelable(true)
-                    setPositiveButton("确认") { dialog, which -> logOut() }
+                    setPositiveButton("确认") { dialog, which -> presenter.onLogout() }
                     setNegativeButton("取消") { dialog, which -> }
                     show()
                 }
             }
-        }
-    }
-
-    //模拟Cookie请求，在退出登录后会自动清楚Cookie中的数据
-    private fun CookiesRequest() {
-        val sharedPreferences = getSharedPreferences("Cookies", Context.MODE_PRIVATE)
-        val presistentUsername = sharedPreferences.getString("username", "").toString()
-        val presistentPassword = sharedPreferences.getString("password", "").toString()
-        val urlLogin: String = "https://www.wanandroid.com/user/login"
-        if (presistentUsername != "" && presistentPassword != "") {
-            val userData = mapOf("username" to presistentUsername, "password" to presistentPassword)
-            val httpUtil = HttpUtil()
-            httpUtil.Http_Post(urlLogin, userData, object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    Log.d("zzx", e.message.toString())
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    val responseData = response.body?.string()
-                    val gson = Gson()
-                    val jsonObject = JsonParser.parseString(responseData).asJsonObject
-                    val userData = jsonObject.getAsJsonObject("data")
-                    val user = gson.fromJson(userData, UserInfo::class.java)
-                    initAutoLogin(user)
-                }
-            })
-        }
-    }
-
-    //自动登录
-    private fun initAutoLogin(user: UserInfo) {
-        val sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE).edit()
-        sharedPreferences.putString("username", user.username)
-        sharedPreferences.putString("nickname", user.nickname)
-        sharedPreferences.putInt("id", user.id)
-        sharedPreferences.putInt("coinCount", user.coinCount)
-        sharedPreferences.putString("email", user.email)
-        runOnUiThread {
-            setUsername(user.username)
-        }
-        sharedPreferences.apply()
-    }
-
-    //处理退出登录
-    private fun logOut() {
-        val url = "https://www.wanandroid.com/user/logout/json"
-        val httpUtil = HttpUtil()
-        httpUtil.Http_Get(url, object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                Log.d("zzx", e.message.toString());
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string().toString()
-                val jsonObject = JSONObject(responseData)
-                val errorCode = jsonObject.getInt("errorCode")
-                if (errorCode == 0) {
-                    clearUserInfo()
-                    logOutSucceed()
-                }
-            }
-        })
-    }
-
-    //成功退出登录
-    private fun logOutSucceed() {
-        runOnUiThread {
-            Toast.makeText(this, "已退出登录!", Toast.LENGTH_SHORT).show()
-            setUsername("未登录")
-        }
-    }
-
-    //退出登录时清理用户信息
-    private fun clearUserInfo() {
-        runOnUiThread {
-            val sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE).edit()
-            sharedPreferences.apply {
-                remove("username")
-                remove("nickname")
-                remove("id")
-                remove("email")
-                remove("coinCount")
-            }
-            sharedPreferences.apply()
-            val Cookies = getSharedPreferences("Cookies", Context.MODE_PRIVATE).edit()
-            Cookies.apply {
-                remove("username")
-                remove("password")
-            }
-            Cookies.apply()
         }
     }
 
