@@ -14,7 +14,7 @@ class AboutActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_about)
 
-        var toolbar: Toolbar = findViewById(R.id.about_toolbar)
+        val toolbar: Toolbar = findViewById(R.id.about_toolbar)
         toolbar.setTitle("关于")
         toolbar.setTitleTextColor(Color.WHITE)
         setSupportActionBar(toolbar)

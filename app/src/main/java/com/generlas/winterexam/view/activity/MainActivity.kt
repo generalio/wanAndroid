@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
@@ -21,6 +22,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.generlas.winterexam.R
+import com.generlas.winterexam.SearchActivity
 import com.generlas.winterexam.contract.MainContract
 import com.generlas.winterexam.model.UserInfo
 import com.generlas.winterexam.model.HttpUtil
@@ -143,10 +145,26 @@ class MainActivity : AppCompatActivity(), MainContract.View {
 
     // 处理toolbar上抽屉开关等图标的点击事件
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
         if (toggle.onOptionsItemSelected(item)) {
             return true
         }
-        return super.onOptionsItemSelected(item)
+
+        return when (item.itemId) {
+            R.id.search -> {
+                val intent = Intent(this, SearchActivity::class.java)
+                startActivity(intent)
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    //加载toolbar的搜索按钮
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_toolbar_main, menu)
+        return true
     }
 
     //前往登录/登出

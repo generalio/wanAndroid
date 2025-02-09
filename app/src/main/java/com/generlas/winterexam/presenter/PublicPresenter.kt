@@ -33,7 +33,7 @@ class PublicPresenter(val view: PublicFragment, val model: PublicModel) : Public
                 val jsonObject = JsonParser.parseString(responseData).asJsonObject
                 val authorArray = jsonObject.getAsJsonArray("data")
                 val typeOf = object : TypeToken<List<PublicAuthorInfo>>() {}.type
-                val authorInfo : List<PublicAuthorInfo> = gson.fromJson(authorArray, typeOf)
+                val authorInfo: List<PublicAuthorInfo> = gson.fromJson(authorArray, typeOf)
                 view.setAuthorInfo(authorInfo)
             }
 
@@ -75,7 +75,7 @@ class PublicPresenter(val view: PublicFragment, val model: PublicModel) : Public
                 val jsonObjectData = jsonObject.getAsJsonObject("data")
                 val jsonArray = jsonObjectData.getAsJsonArray("datas")
                 val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
-                val passageList : List<PassageInfo> = gson.fromJson(jsonArray, typeOf)
+                val passageList: List<PassageInfo> = gson.fromJson(jsonArray, typeOf)
                 view.loadMorePassage(passageList)
             }
 

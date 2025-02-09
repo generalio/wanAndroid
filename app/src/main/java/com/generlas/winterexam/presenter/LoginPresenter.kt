@@ -20,15 +20,11 @@ import java.io.IOException
  */
 class LoginPresenter(private val view: LoginActivity, private val model: LoginModel) : LoginContract.Presenter {
 
-    private var mark = false
-
     //处理登录
     override fun onLogin(username: String, password: String) {
         model.login(username, password, object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                if(mark) {
-                    view.showError(e.message.toString())
-                }
+                 view.showError(e.message.toString())
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -42,13 +38,9 @@ class LoginPresenter(private val view: LoginActivity, private val model: LoginMo
                     val user = gson.fromJson(userData, UserInfo::class.java)
                     model.persistentReserved(username, password)
                     model.userInfoSave(user)
-                    if(mark) {
-                        view.loginSucceed(user)
-                    }
+                    view.loginSucceed(user)
                 } else {
-                    if(mark) {
-                        view.loginFailed()
-                    }
+                    view.loginFailed()
                 }
             }
 

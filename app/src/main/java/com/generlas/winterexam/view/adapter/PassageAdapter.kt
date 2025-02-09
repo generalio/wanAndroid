@@ -2,6 +2,7 @@ package com.generlas.winterexam.view.adapter
 
 import android.content.Context
 import android.content.Intent
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,7 +42,8 @@ class PassageAdapter(private val context: Context) :
             holder.passageAuthor.text = passage.shareUser
             holder.passageDate.text = passage.niceShareDate
         }
-        holder.passageTitle.text = passage.title
+        val trueText = Html.fromHtml(passage.title, Html.FROM_HTML_MODE_COMPACT)
+        holder.passageTitle.text = trueText
         holder.passageChapterName.text = passage.chapterName
 
         //整个View的点击事件
