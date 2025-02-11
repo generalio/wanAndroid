@@ -1,6 +1,6 @@
 package com.generlas.winterexam.presenter
 
-import com.generlas.winterexam.SearchActivity
+import com.generlas.winterexam.view.activity.SearchActivity
 import com.generlas.winterexam.contract.SearchContract
 import com.generlas.winterexam.model.PassageInfo
 import com.generlas.winterexam.model.SearchModel

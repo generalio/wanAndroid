@@ -1,15 +1,13 @@
-package com.generlas.winterexam
+package com.generlas.winterexam.view.activity
 
 import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
 import android.widget.ImageView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.generlas.winterexam.R
 import com.generlas.winterexam.contract.SearchContract
 import com.generlas.winterexam.model.PassageInfo
 import com.generlas.winterexam.model.SearchModel

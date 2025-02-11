@@ -1,7 +1,5 @@
 package com.generlas.winterexam.view.activity
 
-import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -22,10 +20,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.generlas.winterexam.R
-import com.generlas.winterexam.SearchActivity
 import com.generlas.winterexam.contract.MainContract
-import com.generlas.winterexam.model.UserInfo
-import com.generlas.winterexam.model.HttpUtil
 import com.generlas.winterexam.model.MainModel
 import com.generlas.winterexam.presenter.MainPresenter
 import com.generlas.winterexam.view.adapter.ViewPager2Adapter
@@ -34,13 +29,6 @@ import com.generlas.winterexam.view.fragment.NavigationFragment
 import com.generlas.winterexam.view.fragment.PublicFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
-import com.google.gson.Gson
-import com.google.gson.JsonParser
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Response
-import org.json.JSONObject
-import java.io.IOException
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity(), MainContract.View {
