@@ -42,7 +42,5 @@ class MainModel(private val context: Context) : MainContract.Model {
     fun clearUserInfo() {
         val sharedPreferences = context.getSharedPreferences("userInfo", Context.MODE_PRIVATE).edit()
         sharedPreferences.clear().apply()
-        val cookies = context.getSharedPreferences("Cookies", Context.MODE_PRIVATE).edit()
-        cookies.clear().apply()
     }
 }

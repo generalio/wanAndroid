@@ -50,12 +50,14 @@ class MainActivity : AppCompatActivity(), MainContract.View {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) { //如果接收到LoginActivity返回的数据
                     val data: Intent? = result.data
+                    val getCoinCount = data?.getIntExtra("coinCount",-1)
                     val getUsername = data?.getStringExtra("username").toString()
-                    presenter.onLogin()
+                    getCoinCount?.let {
+                        showInfo(getUsername, getCoinCount)
+                    }
                 }
             }
         setButton()
-        presenter.onLogin()
     }
 
     override fun showInfo(username: String, coinCount: Int) {
@@ -65,6 +67,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         val headerButton: Button = headerView.findViewById(R.id.btn_head_login)
         val headerCollectCoins: TextView = headerView.findViewById(R.id.tv_head_collectCoins)
         headerUsername.setText(username)
+        Log.d("zzx","($username:)-->>");
         if (coinCount == -1) {
             headerCollectCoins.setText("积分:--")
         } else {

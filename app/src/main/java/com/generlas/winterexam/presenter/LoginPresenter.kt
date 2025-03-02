@@ -36,7 +36,6 @@ class LoginPresenter(private val view: LoginActivity, private val model: LoginMo
                     val jsonObject = JsonParser.parseString(responseData).asJsonObject
                     val userData = jsonObject.getAsJsonObject("data")
                     val user = gson.fromJson(userData, UserInfo::class.java)
-                    model.persistentReserved(username, password)
                     model.userInfoSave(user)
                     view.loginSucceed(user)
                 } else {

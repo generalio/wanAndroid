@@ -22,33 +22,6 @@ import java.io.IOException
  */
 class MainPresenter(private val view: MainActivity,private val model: MainModel) : MainContract.Presenter {
 
-    //处理自动登录
-    override fun onLogin() {
-        val sharedPreferences = view.getSharedPreferences("Cookies", Context.MODE_PRIVATE)
-        val username = sharedPreferences.getString("username", "").toString()
-        val password = sharedPreferences.getString("password", "").toString()
-        if(username != "" && password != "") {
-            model.autoLogin(username, password, object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    view.showError(e.message.toString())
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    val responseData = response.body?.string()
-                    val gson = Gson()
-                    val jsonObject = JsonParser.parseString(responseData).asJsonObject
-                    val userData = jsonObject.getAsJsonObject("data")
-                    val user = gson.fromJson(userData, UserInfo::class.java)
-                    view.runOnUiThread {
-                        model.saveUserInfo(user)
-                        view.showInfo(user.username, user.coinCount)
-                    }
-                }
-
-            })
-        }
-    }
-
     //处理登出
     override fun onLogout() {
         model.logout(object : Callback {

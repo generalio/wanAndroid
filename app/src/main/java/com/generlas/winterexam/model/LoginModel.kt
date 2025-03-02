@@ -18,14 +18,6 @@ class LoginModel(private val context: Context) : LoginContract.Model{
         httpUtil.Http_Post(urlLogin, userData, callback)
     }
 
-    //持久化账号数据
-    override fun persistentReserved(username: String, password: String) {
-        val sharedPreferences = context.getSharedPreferences("Cookies", Context.MODE_PRIVATE).edit()
-        sharedPreferences.putString("username", username)
-        sharedPreferences.putString("password", password)
-        sharedPreferences.apply()
-    }
-
     //保存用户基本信息
     override fun userInfoSave(user: UserInfo) {
         val sharedPreferences = context.getSharedPreferences("userInfo", Context.MODE_PRIVATE).edit()

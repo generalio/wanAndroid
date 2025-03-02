@@ -13,7 +13,6 @@ interface MainContract {
     }
 
     interface Presenter {
-        fun onLogin()
         fun onLogout()
     }
 

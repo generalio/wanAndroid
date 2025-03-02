@@ -98,6 +98,11 @@ class LoginActivity : AppCompatActivity() , LoginContract.View {
                 if (mEtPassword.text.toString() == "") {
                     mTilPassword.setError("密码不能为空")
                 } else {
+                    if (mCbRemember.isChecked) {
+                        val username = mEtAccount.text.toString()
+                        val password = mEtPassword.text.toString()
+                        presenter.passwordRemember(username, password)
+                    }
                     presenter.onLogin(mEtAccount.text.toString(), mEtPassword.text.toString())
                 }
             }
@@ -108,11 +113,6 @@ class LoginActivity : AppCompatActivity() , LoginContract.View {
         mIvClose.setOnClickListener {
             finish()
         }
-        if (mCbRemember.isChecked) {
-            val username = mEtAccount.text.toString()
-            val password = mEtPassword.text.toString()
-            presenter.passwordRemember(username, password)
-        }
     }
 
     //初始化账号密码
@@ -120,6 +120,9 @@ class LoginActivity : AppCompatActivity() , LoginContract.View {
         val (username, password) = presenter.initInfo()
         mEtAccount.setText(username)
         mEtPassword.setText(password)
+        if(username.isNotEmpty() && password.isNotEmpty()) {
+            mCbRemember.isChecked = true
+        }
     }
 
     override fun showError(message: String) {
@@ -142,6 +145,7 @@ class LoginActivity : AppCompatActivity() , LoginContract.View {
     //登陆成功时
    override fun loginSucceed(user: UserInfo) {
         val resultIntent = Intent()
+        resultIntent.putExtra("coinCount", user.coinCount)
         resultIntent.putExtra("username", user.username)
         setResult(RESULT_OK, resultIntent)
 

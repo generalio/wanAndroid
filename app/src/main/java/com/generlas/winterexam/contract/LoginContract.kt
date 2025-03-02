@@ -10,7 +10,6 @@ import okhttp3.Callback
 interface LoginContract {
     interface Model {
         fun login(username: String, password: String, callback: Callback)
-        fun persistentReserved(username: String, password: String)
         fun userInfoSave(user: UserInfo)
     }
 
