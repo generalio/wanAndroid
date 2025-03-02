@@ -1,4 +1,4 @@
-package com.generlas.winterexam.util
+package com.generlas.winterexam.view
 
 import android.content.Context
 import android.graphics.Canvas
@@ -51,6 +51,7 @@ class CarouselDot @JvmOverloads constructor(
         this.numbers = numbers
         this.currentDot = currentDot
         invalidate()
+        requestLayout()
     }
 
     //改变圆点选中状态

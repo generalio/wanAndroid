@@ -18,20 +18,13 @@ import com.generlas.winterexam.contract.HomeContract
 import com.generlas.winterexam.model.CarouselInfo
 import com.generlas.winterexam.model.HomeModel
 import com.generlas.winterexam.model.PassageInfo
-import com.generlas.winterexam.model.HttpUtil
 import com.generlas.winterexam.presenter.HomePresenter
-import com.generlas.winterexam.util.CarouselDot
+import com.generlas.winterexam.view.CarouselDot
 import com.generlas.winterexam.view.activity.MainActivity
 import com.generlas.winterexam.view.adapter.PassageAdapter
 import com.generlas.winterexam.view.adapter.CarouselViewPager2Adapter
+import com.generlas.winterexam.view.adapter.HomePassageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.gson.Gson
-import com.google.gson.JsonParser
-import com.google.gson.reflect.TypeToken
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Response
-import java.io.IOException
 
 class HomeFragment : Fragment(), HomeContract.view {
 
@@ -42,12 +35,9 @@ class HomeFragment : Fragment(), HomeContract.view {
     var finalCarouselPassage: MutableList<CarouselInfo> = mutableListOf()
     lateinit var handler: Handler
     lateinit var runnable: Runnable
-    lateinit var passageAdapter: PassageAdapter
+    lateinit var passageAdapter: HomePassageAdapter
     var page : Int = 1
-    lateinit var carouselAdapter: CarouselViewPager2Adapter
     lateinit var floatButton: FloatingActionButton
-    lateinit var mTvCarouselTitle: TextView
-    lateinit var dotView: CarouselDot
     lateinit var progressBar: ProgressBar
     lateinit var presenter: HomePresenter
 
@@ -65,7 +55,6 @@ class HomeFragment : Fragment(), HomeContract.view {
         presenter = HomePresenter(this, HomeModel())
 
         //创建轮播图
-        carouselViewPager2 = view.findViewById(R.id.home_viewpager2)
         presenter.initCarousel()
 
         //创建文章Card
@@ -73,8 +62,6 @@ class HomeFragment : Fragment(), HomeContract.view {
         presenter.initPassage()
 
         progressBar = view.findViewById(R.id.home_progressbar)
-        dotView = view.findViewById(R.id.home_carouselDot)
-        mTvCarouselTitle = view.findViewById(R.id.tv_carousel_text)
         floatButton = view.findViewById(R.id.float_home)
         floatButton.setOnClickListener {
             passageRecyclerView2.scrollToPosition(0)
@@ -92,7 +79,7 @@ class HomeFragment : Fragment(), HomeContract.view {
             mainActivity.runOnUiThread {
                 progressBar.visibility =View.GONE
                 passageCard.addAll(passageData)
-                passageAdapter = PassageAdapter(mainActivity)
+                passageAdapter = HomePassageAdapter(mainActivity, finalCarouselPassage.toList())
                 passageRecyclerView2.layoutManager = LinearLayoutManager(mainActivity)
                 passageRecyclerView2.adapter = passageAdapter
                 passageAdapter.submitList(passageData)
@@ -137,66 +124,8 @@ class HomeFragment : Fragment(), HomeContract.view {
                 finalCarouselPassage.add(0, carouselPassage[carouselPassage.size - 1])
                 finalCarouselPassage.addAll(carouselPassage)
                 finalCarouselPassage.add(carouselPassage.size + 1, carouselPassage[0])
-                carouselAdapter = CarouselViewPager2Adapter(mainActivity, finalCarouselPassage.toList())
-                carouselViewPager2.adapter = carouselAdapter
-                carouselViewPager2.currentItem = 1
-                dotView.initDots(carouselPassage.size, 0)
-                mTvCarouselTitle.text = finalCarouselPassage[1].title
-                autoCarousel()
-                handCarousel()
+
             }
         }
-    }
-
-    //手动滑动时暂停自动滑动
-    private fun handCarousel() {
-        carouselViewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageScrollStateChanged(state: Int) {
-                super.onPageScrollStateChanged(state)
-                if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
-                    handler.removeCallbacks(runnable)
-                } else {
-                    if (state == ViewPager2.SCROLL_STATE_IDLE) {
-                        handler.removeCallbacks(runnable) //需把之前的线程关闭掉，否则线程越来越多，自动切换速度越快
-                        handler.postDelayed(runnable, 3000)
-                    }
-                }
-            }
-
-            //当滑动到最后一张(实际上展示为第一张的内容)时，立刻跳到第一张，滑动到第0张(展示为最后一张)时,同理
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                mTvCarouselTitle.text = finalCarouselPassage[position].title
-                if (position == finalCarouselPassage.size - 1) {
-                    dotView.changeDots(0)
-                    carouselViewPager2.setCurrentItem(1, false)
-
-                } else if (position == 0) {
-                    dotView.changeDots(carouselPassage.size - 1)
-                    carouselViewPager2.setCurrentItem(finalCarouselPassage.size - 2, false)
-
-                } else {
-                    dotView.changeDots(position - 1)
-                }
-            }
-        })
-    }
-
-    //自动轮播
-    private fun autoCarousel() {
-        handler = Handler(Looper.getMainLooper())
-        runnable = object : Runnable {
-            override fun run() {
-                val nextPassage = carouselViewPager2.currentItem + 1
-                if(nextPassage == finalCarouselPassage.size - 1) {
-                    carouselViewPager2.setCurrentItem(1,false)
-                }
-                else {
-                    carouselViewPager2.currentItem = nextPassage
-                }
-                handler.postDelayed(this, 3000)
-            }
-        }
-        handler.postDelayed(runnable, 3000)
     }
 }
