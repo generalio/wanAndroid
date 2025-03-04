@@ -30,7 +30,7 @@ class SearchActivity : AppCompatActivity() , SearchContract.view {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
-        presenter = SearchPresenter(this, SearchModel())
+        presenter = SearchPresenter(this, SearchModel(this))
 
         mIvBack = findViewById(R.id.iv_search_back)
         mIvSearch = findViewById(R.id.iv_search_search)

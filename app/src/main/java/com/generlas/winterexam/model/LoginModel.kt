@@ -14,7 +14,7 @@ class LoginModel(private val context: Context) : LoginContract.Model{
     override fun login(username: String, password: String,callback: Callback) {
         val urlLogin: String = "https://www.wanandroid.com/user/login"
         val userData = mapOf("username" to username, "password" to password)
-        val httpUtil = HttpUtil()
+        val httpUtil = HttpUtil(context)
         httpUtil.Http_Post(urlLogin, userData, callback)
     }
 

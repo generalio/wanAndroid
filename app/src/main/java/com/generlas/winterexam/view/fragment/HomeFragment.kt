@@ -1,42 +1,32 @@
 package com.generlas.winterexam.view.fragment
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.ViewPager2
 import com.generlas.winterexam.R
 import com.generlas.winterexam.contract.HomeContract
 import com.generlas.winterexam.model.CarouselInfo
 import com.generlas.winterexam.model.HomeModel
 import com.generlas.winterexam.model.PassageInfo
+import com.generlas.winterexam.model.PersonalInfo
 import com.generlas.winterexam.presenter.HomePresenter
-import com.generlas.winterexam.view.CarouselDot
 import com.generlas.winterexam.view.activity.MainActivity
-import com.generlas.winterexam.view.adapter.PassageAdapter
-import com.generlas.winterexam.view.adapter.CarouselViewPager2Adapter
 import com.generlas.winterexam.view.adapter.HomePassageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class HomeFragment : Fragment(), HomeContract.view {
 
-    lateinit var carouselViewPager2: ViewPager2
     lateinit var passageRecyclerView2: RecyclerView
-    var carouselPassage: List<CarouselInfo> = listOf()
     var passageCard: MutableList<PassageInfo> = mutableListOf()
     var finalCarouselPassage: MutableList<CarouselInfo> = mutableListOf()
-    lateinit var handler: Handler
-    lateinit var runnable: Runnable
     lateinit var passageAdapter: HomePassageAdapter
-    var page : Int = 1
+    var page: Int = 1
     lateinit var floatButton: FloatingActionButton
     lateinit var progressBar: ProgressBar
     lateinit var presenter: HomePresenter
@@ -52,14 +42,17 @@ class HomeFragment : Fragment(), HomeContract.view {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        presenter = HomePresenter(this, HomeModel())
+        val mainActivity: MainActivity
+        if (activity != null) {
+            mainActivity = activity as MainActivity
+            presenter = HomePresenter(this, HomeModel(mainActivity))
+            //创建轮播图
+            presenter.initCarousel()
 
-        //创建轮播图
-        presenter.initCarousel()
-
-        //创建文章Card
-        passageRecyclerView2 = view.findViewById(R.id.home_recyclerView)
-        presenter.initPassage()
+            //创建文章Card
+            passageRecyclerView2 = view.findViewById(R.id.home_recyclerView)
+            presenter.initPassage()
+        }
 
         progressBar = view.findViewById(R.id.home_progressbar)
         floatButton = view.findViewById(R.id.float_home)
@@ -69,7 +62,7 @@ class HomeFragment : Fragment(), HomeContract.view {
     }
 
     override fun showError(message: String) {
-        Log.d("zzx",message)
+        Log.d("zzx", message)
     }
 
     //创建文章列表
@@ -77,7 +70,8 @@ class HomeFragment : Fragment(), HomeContract.view {
         if (activity != null) {
             val mainActivity = activity as MainActivity
             mainActivity.runOnUiThread {
-                progressBar.visibility =View.GONE
+                progressBar.visibility = View.GONE
+                presenter.isLogin()
                 passageCard.addAll(passageData)
                 passageAdapter = HomePassageAdapter(mainActivity, finalCarouselPassage.toList())
                 passageRecyclerView2.layoutManager = LinearLayoutManager(mainActivity)
@@ -88,10 +82,17 @@ class HomeFragment : Fragment(), HomeContract.view {
         }
     }
 
+    fun loginSucceed(personalInfo: PersonalInfo) {
+        val mainActivity = activity as MainActivity
+        mainActivity.runOnUiThread {
+            mainActivity.isLoginSuccess(personalInfo)
+        }
+    }
+
     //加载更多文章
     override fun loadMorePassageCard(passageData: List<PassageInfo>) {
         passageCard.addAll(passageData)
-        if(activity != null) {
+        if (activity != null) {
             val mainActivity = activity as MainActivity
             mainActivity.runOnUiThread {
                 passageAdapter.submitList(passageCard.toList())
@@ -107,7 +108,7 @@ class HomeFragment : Fragment(), HomeContract.view {
                 val layoutManager = recyclerView.layoutManager as LinearLayoutManager
                 val totalItem = layoutManager.itemCount
                 val lastItem = layoutManager.findLastVisibleItemPosition()
-                if(lastItem == totalItem - 1) {
+                if (lastItem == totalItem - 1) {
                     presenter.loadMore(page)
                     page++
                 }

@@ -13,6 +13,7 @@ interface HomeContract {
     interface model {
         fun loadPassage(page: Int,callback: Callback)
         fun loadCarouselPassage(callback: Callback)
+        fun checkLogin(callback: Callback)
     }
 
     interface view {
@@ -26,5 +27,6 @@ interface HomeContract {
         fun initPassage()
         fun loadMore(page: Int)
         fun initCarousel()
+        fun isLogin()
     }
 }

@@ -15,7 +15,7 @@ class MainModel(private val context: Context) : MainContract.Model {
         val urlLogin: String = "https://www.wanandroid.com/user/login"
         if (username != "" && password != "") {
             val userData = mapOf("username" to username, "password" to password)
-            val httpUtil = HttpUtil()
+            val httpUtil = HttpUtil(context)
             httpUtil.Http_Post(urlLogin, userData, callback)
         }
     }
@@ -23,7 +23,7 @@ class MainModel(private val context: Context) : MainContract.Model {
     //登出
     override fun logout(callback: Callback) {
         val url = "https://www.wanandroid.com/user/logout/json"
-        val httpUtil = HttpUtil()
+        val httpUtil = HttpUtil(context)
         httpUtil.Http_Get(url, callback)
     }
 

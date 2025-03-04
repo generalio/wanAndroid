@@ -18,7 +18,7 @@ class SignModel(val context: Context) : SignContract.model {
         val url = "https://www.wanandroid.com/user/register"
         val signData =
             mapOf("username" to username, "password" to password, "repassword" to rePassword)
-        val httpUtil = HttpUtil()
+        val httpUtil = HttpUtil(context)
         httpUtil.Http_Post(url, signData, callback)
     }
 }

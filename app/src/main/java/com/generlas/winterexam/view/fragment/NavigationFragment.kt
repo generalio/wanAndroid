@@ -58,7 +58,7 @@ class NavigationFragment : Fragment(), NavigationListAdapter.OnItemClickListener
         contentRecyclerView = view.findViewById(R.id.navigation_content_recyclerView)
         mTvNavigation = view.findViewById(R.id.tv_navigation)
         floatButton = view.findViewById(R.id.float_navigation)
-        presenter = NavigationPresenter(this, NavigationModel())
+        presenter = NavigationPresenter(this, NavigationModel(mainActivity))
 
         floatButton.setOnClickListener {
             contentRecyclerView.scrollToPosition(0)

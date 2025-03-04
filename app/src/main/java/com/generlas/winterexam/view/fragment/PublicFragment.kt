@@ -44,9 +44,10 @@ class PublicFragment : Fragment() , PublicContract.view {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        presenter = PublicPresenter(this, PublicModel())
-
         mainActivity = activity as MainActivity
+
+        presenter = PublicPresenter(this, PublicModel(mainActivity))
+
         progressBar = view.findViewById(R.id.public_progressbar)
         tabLayout = view.findViewById(R.id.tab_public)
         recyclerView = view.findViewById(R.id.public_recyclerView)

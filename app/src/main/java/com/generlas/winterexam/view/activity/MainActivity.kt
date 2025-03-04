@@ -22,6 +22,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.generlas.winterexam.R
 import com.generlas.winterexam.contract.MainContract
 import com.generlas.winterexam.model.MainModel
+import com.generlas.winterexam.model.PersonalInfo
 import com.generlas.winterexam.presenter.MainPresenter
 import com.generlas.winterexam.view.adapter.ViewPager2Adapter
 import com.generlas.winterexam.view.fragment.HomeFragment
@@ -31,7 +32,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import java.util.ArrayList
 
-class MainActivity : AppCompatActivity(), MainContract.View {
+class MainActivity : AppCompatActivity(), MainContract.View, AutoLogin {
     lateinit var presenter: MainContract.Presenter
     lateinit var toggle: ActionBarDrawerToggle
     lateinit var startForResult: ActivityResultLauncher<Intent>
@@ -224,5 +225,9 @@ class MainActivity : AppCompatActivity(), MainContract.View {
             }
             false
         }
+    }
+
+    override fun isLoginSuccess(personalInfo: PersonalInfo) {
+        showInfo(personalInfo.data.userInfo.username, personalInfo.data.coinInfo.coinCount)
     }
 }
