@@ -30,4 +30,18 @@ class HomeModel(private val context: Context) : HomeContract.model {
         httpUtil.Http_Get(url, callback)
     }
 
+    override fun collect(id: Int, callback: Callback) {
+        val url = "https://www.wanandroid.com/lg/collect/$id/json"
+        val httpUtil = HttpUtil(context)
+        val collectData = mapOf("id" to id.toString())
+        httpUtil.Http_Post(url, collectData, callback)
+    }
+
+    override fun unCollect(id: Int, callback: Callback) {
+        val url = "https://www.wanandroid.com/lg/uncollect_originId/$id/json"
+        val httpUtil = HttpUtil(context)
+        val collectData = mapOf("id" to id.toString())
+        httpUtil.Http_Post(url, collectData, callback)
+    }
+
 }

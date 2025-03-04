@@ -14,6 +14,8 @@ interface HomeContract {
         fun loadPassage(page: Int,callback: Callback)
         fun loadCarouselPassage(callback: Callback)
         fun checkLogin(callback: Callback)
+        fun collect(id: Int,callback: Callback)
+        fun unCollect(id: Int, callback: Callback)
     }
 
     interface view {
@@ -21,6 +23,8 @@ interface HomeContract {
         fun createPassageCard(passageData: List<PassageInfo>)
         fun loadMorePassageCard(passageData: List<PassageInfo>)
         fun createCarousel(carouselInfo: List<CarouselInfo>)
+        fun succeedCollect()
+        fun succeedUnCollect()
     }
 
     interface presenter {
@@ -29,5 +33,7 @@ interface HomeContract {
         fun initCarousel()
         fun isLogin()
         fun updateCollect()
+        fun collect(id: Int)
+        fun unCollect(id: Int)
     }
 }

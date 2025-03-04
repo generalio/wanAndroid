@@ -124,4 +124,30 @@ class HomePresenter(private val view: HomeFragment, private val model: HomeModel
         })
     }
 
+    override fun collect(id: Int) {
+        model.collect(id, object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                view.showError(e.message.toString())
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                view.succeedCollect()
+            }
+
+        })
+    }
+
+    override fun unCollect(id: Int) {
+        model.unCollect(id, object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                view.showError(e.message.toString())
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                view.succeedUnCollect()
+            }
+
+        })
+    }
+
 }

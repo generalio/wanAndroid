@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,7 +21,8 @@ import com.generlas.winterexam.view.activity.MainActivity
 import com.generlas.winterexam.view.adapter.HomePassageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class HomeFragment : Fragment(), HomeContract.view, UpdatePassage {
+class HomeFragment : Fragment(), HomeContract.view, UpdatePassage,
+    HomePassageAdapter.OnItemClickListener {
 
     lateinit var passageRecyclerView2: RecyclerView
     var passageCard: MutableList<PassageInfo> = mutableListOf()
@@ -46,6 +48,8 @@ class HomeFragment : Fragment(), HomeContract.view, UpdatePassage {
         if (activity != null) {
             mainActivity = activity as MainActivity
             presenter = HomePresenter(this, HomeModel(mainActivity))
+
+
             //创建轮播图
             presenter.initCarousel()
 
@@ -73,7 +77,8 @@ class HomeFragment : Fragment(), HomeContract.view, UpdatePassage {
                 progressBar.visibility = View.GONE
                 presenter.isLogin()
                 passageCard.addAll(passageData)
-                passageAdapter = HomePassageAdapter(mainActivity, finalCarouselPassage.toList())
+                passageAdapter =
+                    HomePassageAdapter(mainActivity, finalCarouselPassage.toList(), this)
                 passageRecyclerView2.layoutManager = LinearLayoutManager(mainActivity)
                 passageRecyclerView2.adapter = passageAdapter
                 passageAdapter.submitList(passageData)
@@ -130,6 +135,20 @@ class HomeFragment : Fragment(), HomeContract.view, UpdatePassage {
         }
     }
 
+    override fun succeedCollect() {
+        val mainActivity = activity as MainActivity
+        mainActivity.runOnUiThread {
+            Toast.makeText(mainActivity, "收藏成功!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun succeedUnCollect() {
+        val mainActivity = activity as MainActivity
+        mainActivity.runOnUiThread {
+            Toast.makeText(mainActivity, "取消收藏!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     fun updatePassageCard(passageData: List<PassageInfo>) {
         if (activity != null) {
             val mainActivity = activity as MainActivity
@@ -141,6 +160,14 @@ class HomeFragment : Fragment(), HomeContract.view, UpdatePassage {
 
     override fun update() {
         presenter.updateCollect()
+    }
+
+    override fun onItemClick(id: Int, collect: Boolean) {
+        if (collect == true) {
+            presenter.unCollect(id)
+        } else {
+            presenter.collect(id)
+        }
     }
 
 }

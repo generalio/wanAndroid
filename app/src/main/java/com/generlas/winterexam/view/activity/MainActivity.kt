@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity(), MainContract.View, AutoLogin {
     lateinit var presenter: MainContract.Presenter
     lateinit var toggle: ActionBarDrawerToggle
     lateinit var startForResult: ActivityResultLauncher<Intent>
+    private var isLogin = false
 
     @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +57,7 @@ class MainActivity : AppCompatActivity(), MainContract.View, AutoLogin {
                     val getCoinCount = data?.getIntExtra("coinCount",-1)
                     val getUsername = data?.getStringExtra("username").toString()
                     getCoinCount?.let {
+                        isLogin = true
                         val homeFragment = supportFragmentManager.findFragmentByTag("f0") as? HomeFragment
                         val publicFragment = supportFragmentManager.findFragmentByTag("f1") as? PublicFragment
                         homeFragment?.update()
@@ -91,6 +93,7 @@ class MainActivity : AppCompatActivity(), MainContract.View, AutoLogin {
     }
 
     override fun showLogout() {
+        isLogin = false
         val homeFragment = supportFragmentManager.findFragmentByTag("f0") as? HomeFragment
         val publicFragment = supportFragmentManager.findFragmentByTag("f1") as? PublicFragment
         homeFragment?.update()
@@ -236,7 +239,10 @@ class MainActivity : AppCompatActivity(), MainContract.View, AutoLogin {
         }
     }
 
+    fun checkLogin() : Boolean = isLogin
+
     override fun isLoginSuccess(personalInfo: PersonalInfo) {
+        isLogin = true
         showInfo(personalInfo.data.userInfo.username, personalInfo.data.coinInfo.coinCount)
     }
 }

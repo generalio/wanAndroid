@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -17,13 +18,15 @@ import com.generlas.winterexam.R
 import com.generlas.winterexam.model.CarouselInfo
 import com.generlas.winterexam.model.PassageInfo
 import com.generlas.winterexam.view.CarouselDot
+import com.generlas.winterexam.view.activity.LoginActivity
+import com.generlas.winterexam.view.activity.MainActivity
 import com.generlas.winterexam.view.activity.WebViewActivity
 
 /**
  * description ： TODO:home页的recyclerview
  * date : 2025/3/2 13:20
  */
-class HomePassageAdapter(private val context: Context, private val carouselInfo: List<CarouselInfo>) :
+class HomePassageAdapter(private val context: Context, private val carouselInfo: List<CarouselInfo>, private val itemClickListener: OnItemClickListener) :
     ListAdapter<PassageInfo, RecyclerView.ViewHolder>(ItemDiffCallback()) {
 
     private val TYPE_BANNER = 0
@@ -32,12 +35,17 @@ class HomePassageAdapter(private val context: Context, private val carouselInfo:
     lateinit var handler: Handler
     lateinit var runnable: Runnable
 
+    interface OnItemClickListener {
+        fun onItemClick(id: Int, collect: Boolean)
+    }
+
     inner class PassageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val passageAuthor: TextView = view.findViewById(R.id.tv_card_author)
         val passageDate: TextView = view.findViewById(R.id.tv_card_date)
         val passageTitle: TextView = view.findViewById(R.id.tv_card_title)
         val passageChapterName: TextView = view.findViewById(R.id.tv_card_chapterName)
         val passageCollect : ImageView = view.findViewById(R.id.iv_card_collect)
+
     }
 
     inner class BannerViewHolder(view: View): RecyclerView.ViewHolder(view) {
@@ -141,6 +149,23 @@ class HomePassageAdapter(private val context: Context, private val carouselInfo:
                     val intent = Intent(context, WebViewActivity::class.java)
                     intent.putExtra("url", passage.link)
                     context.startActivity(intent)
+                }
+
+                holder.passageCollect.setOnClickListener {
+                    if((context as MainActivity).checkLogin() == true) {
+                        itemClickListener.onItemClick(passage.id, passage.collect)
+                        if(passage.collect == false) {
+                            currentList[position].collect = true
+                            holder.passageCollect.setImageResource(R.drawable.ic_collect_selected)
+                            submitList(currentList)
+                        } else {
+                            currentList[position].collect = false
+                            holder.passageCollect.setImageResource(R.drawable.ic_collect)
+                            submitList(currentList)
+                        }
+                    } else {
+                        Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
