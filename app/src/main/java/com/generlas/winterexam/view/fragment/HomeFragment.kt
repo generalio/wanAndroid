@@ -20,7 +20,7 @@ import com.generlas.winterexam.view.activity.MainActivity
 import com.generlas.winterexam.view.adapter.HomePassageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class HomeFragment : Fragment(), HomeContract.view {
+class HomeFragment : Fragment(), HomeContract.view, UpdatePassage {
 
     lateinit var passageRecyclerView2: RecyclerView
     var passageCard: MutableList<PassageInfo> = mutableListOf()
@@ -129,4 +129,18 @@ class HomeFragment : Fragment(), HomeContract.view {
             }
         }
     }
+
+    fun updatePassageCard(passageData: List<PassageInfo>) {
+        if (activity != null) {
+            val mainActivity = activity as MainActivity
+            mainActivity.runOnUiThread {
+                passageAdapter.submitList(passageData)
+            }
+        }
+    }
+
+    override fun update() {
+        presenter.updateCollect()
+    }
+
 }

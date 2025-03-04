@@ -1,5 +1,6 @@
 package com.generlas.winterexam.view.activity
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity(), MainContract.View, AutoLogin {
     lateinit var toggle: ActionBarDrawerToggle
     lateinit var startForResult: ActivityResultLauncher<Intent>
 
+    @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -54,6 +56,10 @@ class MainActivity : AppCompatActivity(), MainContract.View, AutoLogin {
                     val getCoinCount = data?.getIntExtra("coinCount",-1)
                     val getUsername = data?.getStringExtra("username").toString()
                     getCoinCount?.let {
+                        val homeFragment = supportFragmentManager.findFragmentByTag("f0") as? HomeFragment
+                        val publicFragment = supportFragmentManager.findFragmentByTag("f1") as? PublicFragment
+                        homeFragment?.update()
+                        publicFragment?.update()
                         showInfo(getUsername, getCoinCount)
                     }
                 }
@@ -68,7 +74,6 @@ class MainActivity : AppCompatActivity(), MainContract.View, AutoLogin {
         val headerButton: Button = headerView.findViewById(R.id.btn_head_login)
         val headerCollectCoins: TextView = headerView.findViewById(R.id.tv_head_collectCoins)
         headerUsername.setText(username)
-        Log.d("zzx","($username:)-->>");
         if (coinCount == -1) {
             headerCollectCoins.setText("积分:--")
         } else {
@@ -86,6 +91,10 @@ class MainActivity : AppCompatActivity(), MainContract.View, AutoLogin {
     }
 
     override fun showLogout() {
+        val homeFragment = supportFragmentManager.findFragmentByTag("f0") as? HomeFragment
+        val publicFragment = supportFragmentManager.findFragmentByTag("f1") as? PublicFragment
+        homeFragment?.update()
+        publicFragment?.update()
         Toast.makeText(this, "已退出登录!", Toast.LENGTH_SHORT).show()
     }
 

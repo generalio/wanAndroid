@@ -21,7 +21,7 @@ import com.generlas.winterexam.view.adapter.PassageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 
-class PublicFragment : Fragment() , PublicContract.view {
+class PublicFragment : Fragment() , PublicContract.view, UpdatePassage {
 
     lateinit var tabLayout: TabLayout
     lateinit var recyclerView: RecyclerView
@@ -136,6 +136,10 @@ class PublicFragment : Fragment() , PublicContract.view {
 
     override fun showError(message: String) {
         Log.d("zzx",message)
+    }
+
+    override fun update() {
+        presenter.initPassage(0)
     }
 
 }

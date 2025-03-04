@@ -104,4 +104,24 @@ class HomePresenter(private val view: HomeFragment, private val model: HomeModel
         })
     }
 
+    override fun updateCollect() {
+        model.loadPassage(0, object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                view.showError(e.message.toString())
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string().toString()
+                val gson = Gson()
+                val json = JsonParser.parseString(responseData).asJsonObject
+                val jsonObject = json.getAsJsonObject("data")
+                val jsonData = jsonObject.getAsJsonArray("datas")
+                val typeOf = object : TypeToken<List<PassageInfo>>() {}.type
+                val passageData : List<PassageInfo> = gson.fromJson(jsonData, typeOf)
+                view.updatePassageCard(passageData)
+            }
+
+        })
+    }
+
 }

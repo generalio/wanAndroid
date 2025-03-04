@@ -9,7 +9,7 @@ import com.generlas.winterexam.model.PassageInfo
  */
 class ItemDiffCallback : DiffUtil.ItemCallback<PassageInfo>() {
     override fun areContentsTheSame(oldItem: PassageInfo, newItem: PassageInfo): Boolean {
-        return oldItem.link == newItem.link
+        return oldItem.id == newItem.id
     }
 
     override fun areItemsTheSame(oldItem: PassageInfo, newItem: PassageInfo): Boolean {

@@ -8,6 +8,7 @@ import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -36,6 +37,7 @@ class HomePassageAdapter(private val context: Context, private val carouselInfo:
         val passageDate: TextView = view.findViewById(R.id.tv_card_date)
         val passageTitle: TextView = view.findViewById(R.id.tv_card_title)
         val passageChapterName: TextView = view.findViewById(R.id.tv_card_chapterName)
+        val passageCollect : ImageView = view.findViewById(R.id.iv_card_collect)
     }
 
     inner class BannerViewHolder(view: View): RecyclerView.ViewHolder(view) {
@@ -124,6 +126,13 @@ class HomePassageAdapter(private val context: Context, private val carouselInfo:
                     holder.passageDate.text = passage.niceShareDate
                 }
                 val trueText = Html.fromHtml(passage.title, Html.FROM_HTML_MODE_COMPACT)
+
+                if(passage.collect == true) {
+                    holder.passageCollect.setImageResource(R.drawable.ic_collect_selected)
+                } else {
+                    holder.passageCollect.setImageResource(R.drawable.ic_collect)
+                }
+
                 holder.passageTitle.text = trueText
                 holder.passageChapterName.text = passage.chapterName
 

@@ -28,5 +28,6 @@ interface HomeContract {
         fun loadMore(page: Int)
         fun initCarousel()
         fun isLogin()
+        fun updateCollect()
     }
 }
