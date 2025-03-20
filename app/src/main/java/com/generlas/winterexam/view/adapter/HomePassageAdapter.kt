@@ -60,6 +60,10 @@ class HomePassageAdapter(private val context: Context, private val carouselInfo:
 
         //手动滑动时暂停自动滑动
         private fun handCarousel() {
+            /*
+            这里轮播图无限轮播的实现逻辑应该写在onPageScrollStateChanged里面因为我们要的是在滑动到那张后且不动了才会执行切换逻辑
+            否则切换动画会很怪
+             */
             carouselViewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageScrollStateChanged(state: Int) {
                     super.onPageScrollStateChanged(state)
@@ -67,6 +71,12 @@ class HomePassageAdapter(private val context: Context, private val carouselInfo:
                         handler.removeCallbacks(runnable)
                     } else {
                         if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                            if(carouselViewPager2.currentItem == carouselInfo.size - 1) {
+                                carouselViewPager2.setCurrentItem(1, false)
+                            }
+                            if(carouselViewPager2.currentItem == 0) {
+                                carouselViewPager2.setCurrentItem(carouselInfo.size - 2, false)
+                            }
                             handler.removeCallbacks(runnable) //需把之前的线程关闭掉，否则线程越来越多，自动切换速度越快
                             handler.postDelayed(runnable, 3000)
                         }
@@ -79,12 +89,11 @@ class HomePassageAdapter(private val context: Context, private val carouselInfo:
                     mTvCarouselTitle.text = carouselInfo[position].title
                     if (position == carouselInfo.size - 1) {
                         dotView.changeDots(0)
-                        carouselViewPager2.setCurrentItem(1, false)
+                        //carouselViewPager2.setCurrentItem(1, false)
 
                     } else if (position == 0) {
                         dotView.changeDots(carouselInfo.size - 1)
-                        carouselViewPager2.setCurrentItem(carouselInfo.size - 2, false)
-
+                        //carouselViewPager2.setCurrentItem(carouselInfo.size - 2, false)
                     } else {
                         dotView.changeDots(position - 1)
                     }
@@ -98,7 +107,7 @@ class HomePassageAdapter(private val context: Context, private val carouselInfo:
             runnable = object : Runnable {
                 override fun run() {
                     val nextPassage = carouselViewPager2.currentItem + 1
-                    if(nextPassage == carouselInfo.size - 1) {
+                    if(nextPassage == carouselInfo.size) {
                         carouselViewPager2.setCurrentItem(1,false)
                     }
                     else {
